@@ -13,16 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('promotion_requests', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('password');
-            $table->string('photo');
-            $table->string('gender');
-            $table->string('phone_number')->unique();
-            $table->timestamp('confirm_at')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('status_id');
+            $table->longText('description');
+            $table->text('admin_message');
+            $table->text('credential_photo');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -35,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('promotion_requests');
     }
 };
