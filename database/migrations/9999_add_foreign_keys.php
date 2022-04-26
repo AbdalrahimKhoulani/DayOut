@@ -79,7 +79,7 @@ return new class extends Migration {
         });
 
 
-        Schema::create('followers', function (Blueprint $table) {
+        Schema::table('followers', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreign('organizer_id')->references('id')->on('organizers')->cascadeOnDelete()->cascadeOnUpdate();
         });
@@ -100,7 +100,7 @@ return new class extends Migration {
 
         Schema::table('customer_poll_choices', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreign('poll_id')->references('id')->on('poll')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('poll_id')->references('id')->on('polls')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreign('poll_choice_id')->references('id')->on('poll_choices')->cascadeOnDelete()->cascadeOnUpdate();
         });
 
