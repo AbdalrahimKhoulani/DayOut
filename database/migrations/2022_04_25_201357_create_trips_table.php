@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('title');
            // $table->foreignId('organizer_id')->references('id')->on('organizers')->cascadeOnUpdate()->cascadeOnDelete();
            // $table->foreignId('trip_status_id')->references('id')->on('trip_statuses')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->unsignedBigInteger('organizer_id');
             $table->unsignedBigInteger('trip_status_id');
 
             $table->text('description');

@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('organizers', function (Blueprint $table) {
-            $table->increments('id');
+            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->text('credential_photo');
             $table->timestamps();
