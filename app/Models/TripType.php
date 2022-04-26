@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class favorite_place extends Model
+class TripType extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id','place_id'];
+    protected $fillable = ['trip_id','type_id'];
 }

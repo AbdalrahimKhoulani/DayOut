@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::create('trip_photos', function (Blueprint $table) {
             $table->id();
-            $table->integer('trip_id');
+//            $table->foreignId('trip_id')->references('id')->on('trips')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->unsignedBigInteger('trip_id');
             $table->string('path');
             $table->timestamps();
         });

@@ -15,8 +15,10 @@ return new class extends Migration
     {
         Schema::create('customer_trips', function (Blueprint $table) {
             $table->id();
-            $table->integer('customer_id');
-            $table->integer('trip_id');
+//            $table->foreignId('customer_id')->references('id')->on('users')->cascadeOnUpdate()->cascadeOnDelete();
+//            $table->foreignId('trip_id')->references('id')->on('trips')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('trip_id');
             $table->boolean('checkout');
             $table->integer('rate')->nullable();
             $table->text('rate_comment')->nullable();

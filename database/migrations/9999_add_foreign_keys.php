@@ -1,0 +1,114 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('customer_trips', function (Blueprint $table) {
+
+            $table->foreign('customer_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('trip_id')->references('id')->on('trips')->cascadeOnDelete()->cascadeOnUpdate();
+
+        });
+
+        Schema::table('favorite_places', function (Blueprint $table) {
+
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('place_id')->references('id')->on('places')->cascadeOnDelete()->cascadeOnUpdate();
+
+        });
+
+        Schema::table('place_photos', function (Blueprint $table) {
+
+            $table->foreign('place_id')->references('id')->on('places')->cascadeOnDelete()->cascadeOnUpdate();
+
+        });
+
+        Schema::table('place_trips', function (Blueprint $table) {
+
+            $table->foreign('place_id')->references('id')->on('places')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('trip_id')->references('id')->on('trips')->cascadeOnDelete()->cascadeOnUpdate();
+        });
+
+        Schema::table('trips', function (Blueprint $table) {
+
+            $table->foreign('trip_status_id')->references('id')->on('trip_statuses')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('organizer_id')->references('id')->on('organizers')->cascadeOnDelete()->cascadeOnUpdate();
+        });
+
+        Schema::table('trip_types', function (Blueprint $table) {
+
+            $table->foreign('trip_id')->references('id')->on('trips')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('type_id')->references('id')->on('types')->cascadeOnDelete()->cascadeOnUpdate();
+        });
+
+
+        Schema::table('passengers', function (Blueprint $table) {
+
+            $table->foreign('customer_trip_id')->references('id')->on('customer_trips');
+
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('customer_trips', function (Blueprint $table) {
+
+            $table->dropForeign('customer_id');
+            $table->dropForeign('trip_id');
+
+        });
+
+        Schema::table('favorite_places', function (Blueprint $table) {
+
+            $table->dropForeign('user_id');
+            $table->dropForeign('place_id');
+
+        });
+
+        Schema::table('place_photos', function (Blueprint $table) {
+
+            $table->dropForeign('place_id');
+
+        });
+
+        Schema::table('place_trips', function (Blueprint $table) {
+
+            $table->dropForeign('place_id');
+            $table->dropForeign('trip_id');
+        });
+
+        Schema::table('trips', function (Blueprint $table) {
+
+            $table->dropForeign('trip_status_id');
+            $table->dropForeign('organizer_id');
+        });
+
+        Schema::table('trip_types', function (Blueprint $table) {
+
+            $table->dropForeign('trip_id');
+            $table->dropForeign('type_id');
+        });
+
+
+        Schema::table('passengers', function (Blueprint $table) {
+
+            $table->dropForeign('customer_trip_id');
+
+        });
+    }
+};

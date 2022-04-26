@@ -13,12 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('trip_types', function (Blueprint $table) {
+        Schema::create('place_photos', function (Blueprint $table) {
             $table->id();
-//            $table->foreignId('trip_id')->references('id')->on('trips')->cascadeOnUpdate()->cascadeOnDelete();
-//            $table->foreignId('type_id')->references('id')->on('types')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->unsignedBigInteger('trip_id');
-            $table->unsignedBigInteger('type_id');
+            $table->unsignedBigInteger('place_id');
+            $table->string('path');
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('trip_types');
+        Schema::dropIfExists('place_photos');
     }
 };

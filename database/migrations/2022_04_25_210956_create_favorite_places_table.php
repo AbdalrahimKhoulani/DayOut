@@ -15,8 +15,10 @@ return new class extends Migration
     {
         Schema::create('favorite_places', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('place_id');
+//            $table->foreignId('user_id')->references('id')->on('users')->cascadeOnUpdate()->cascadeOnDelete();
+//            $table->foreignId('place_id')->references('id')->on('places')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('place_id');
             $table->timestamps();
         });
     }

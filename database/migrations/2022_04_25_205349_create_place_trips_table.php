@@ -15,8 +15,10 @@ return new class extends Migration
     {
         Schema::create('place_trips', function (Blueprint $table) {
             $table->id();
-            $table->integer('place_id');
-            $table->integer('trip_id');
+//            $table->foreignId('place_id')->references('id')->on('places')->cascadeOnUpdate()->cascadeOnDelete();
+//            $table->foreignId('trip_id')->references('id')->on('trips')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->unsignedBigInteger('place_id');
+            $table->unsignedBigInteger('trip_id');
             $table->integer('order');
             $table->text('description');
             $table->softDeletes();
