@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\UserController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -21,9 +22,13 @@ Route::middleware('auth:api')->get('/user', function () {
     return $user;
 });
 
-Route::post('/register','API\UserController@register');
+Route::prefix('/user')->controller(UserController::class)->group(function (){
+    Route::get('','index');
+    Route::get('/login','login');
 
-Route::post('/organizer/register','API\UserController@organizerRegister');
+});
+
+Route::post('/register','API\UserController@register');
 
 Route::post('/promotion/request','API\UserController@requestPromotion');
 
