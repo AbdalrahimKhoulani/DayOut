@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\PlaceController;
 use App\Http\Controllers\Api\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -20,6 +21,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function () {
     $user = User::where('phone_number', '=', '0937771725')->get()->first();
     return $user;
+});
+
+Route::prefix('/place')->controller(PlaceController::class)->group(function(){
+
+    Route::get('','index');
+
 });
 
 Route::prefix('/user')->controller(UserController::class)->group(function (){

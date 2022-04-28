@@ -25,5 +25,9 @@ class Place extends Model
     {
         return $this->hasMany(PlacePhotos::class);
     }
+    public function type()
+    {
+        return $this->belongsTo(PlaceType::class,'type_id');
+    }
 
 }
