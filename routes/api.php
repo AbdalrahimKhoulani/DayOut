@@ -24,12 +24,12 @@ Route::middleware('auth:api')->get('/user', function () {
 
 Route::prefix('/user')->controller(UserController::class)->group(function (){
     Route::get('','index');
-    Route::get('/login','login');
+    Route::post('/login','login');
+    Route::post('/register','register');
 
+    Route::post('/promotion/request','requestPromotion');
+
+    Route::post('/confirm','confirmAccount');
 });
 
-Route::post('/register','API\UserController@register');
 
-Route::post('/promotion/request','API\UserController@requestPromotion');
-
-Route::post('/confirm','API\UserController@confirmAccount');
