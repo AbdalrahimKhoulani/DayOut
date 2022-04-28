@@ -25,6 +25,10 @@ class User extends Authenticatable
         'gender'
     ];
 
+    protected $casts = [
+        'verified_at' => 'datetime'
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -33,6 +37,16 @@ class User extends Authenticatable
     protected $hidden = [
         'password'
     ];
+
+    public function verifiedAccount()
+    {
+        return $this->forceFill(['verified_at' => $this->freshTimestamp()])->save();
+    }
+
+    public function confirmCode()
+    {
+        return $this->hasOne(ConfirmationCode::class, 'user_id', 'id');
+    }
 
     public function reports()
     {
@@ -74,11 +88,13 @@ class User extends Authenticatable
         return $this->belongsToMany(Poll::class, 'customer_poll_choices', 'user_id', 'poll_id');
     }
 
-    public function favoritePlace(){
-        return $this->belongsToMany(Place::class,'favorite_places','user_id','place_id');
+    public function favoritePlace()
+    {
+        return $this->belongsToMany(Place::class, 'favorite_places', 'user_id', 'place_id');
     }
 
-    public function customerTrip(){
-        return $this->belongsToMany(Trip::class,'customer_trips','user_id','trip_id');
+    public function customerTrip()
+    {
+        return $this->belongsToMany(Trip::class, 'customer_trips', 'user_id', 'trip_id');
     }
 }

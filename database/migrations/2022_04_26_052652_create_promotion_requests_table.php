@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('status_id');
             $table->longText('description');
-            $table->text('admin_message');
+            $table->text('admin_message')->nullable();
             $table->text('credential_photo');
             $table->softDeletes();
             $table->timestamps();

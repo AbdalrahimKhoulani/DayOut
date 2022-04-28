@@ -17,11 +17,13 @@ return new class extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
+            $table->string('email')->nullable();
+            $table->string('phone_number')->unique();
             $table->string('password');
             $table->string('photo');
             $table->string('gender');
-            $table->string('phone_number')->unique();
-            $table->timestamp('confirm_at')->nullable();
+            $table->text('mobile_token')->nullable();
+            $table->timestamp('verified_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();

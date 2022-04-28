@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +16,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:api')->get('/user', function () {
+    $user = User::where('phone_number', '=', '0937771725')->get()->first();
+    return $user;
 });
+
+Route::post('/register','API\UserController@register');
+
+Route::post('/organizer/register','API\UserController@organizerRegister');
+
+Route::post('/promotion/request','API\UserController@requestPromotion');
+
+Route::post('/confirm','API\UserController@confirmAccount');
