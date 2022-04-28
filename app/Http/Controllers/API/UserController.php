@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ConfirmationCode;
@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
-use Validator;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends BaseController
 {
@@ -135,7 +135,7 @@ class UserController extends BaseController
     {
         $old_code = ConfirmationCode::where('user_id', '=', $user_id)->first();
         if ($old_code != null) {
-            $old_code . delete();
+            $old_code.delete();
         }
 
         $code = mt_rand(1000, 9999);
