@@ -26,6 +26,8 @@ Route::middleware('auth:api')->get('/user', function () {
 Route::prefix('/place')->controller(PlaceController::class)->group(function(){
 
     Route::get('','index');
+    Route::get('/popular','popularPlaces');
+    Route::post('/favorite','favorite');
 
 });
 
