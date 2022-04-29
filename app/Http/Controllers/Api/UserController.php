@@ -18,7 +18,20 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends BaseController
 {
+    public function login(Request $request)
+    {
+        if (Auth::attempt(['phone_number' => $request->phone_number, 'password' => $request->password])) {
+            $user = Auth::user();
+            $success['id'] = $user->id;
+            $success['role'] = $user->roles;
+            $success['token'] = $user->createToken($user->phone_number . $user->password)->accessToken;
 
+            return $this->sendResponse($success, 'Login successful!');
+        } else {
+            return $this->sendError('Login information are not correct!', ['error' => 'Unauthorized'], 406);
+
+        }
+    }
     public function register(Request $request)
     {
 
