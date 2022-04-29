@@ -19,7 +19,7 @@ class Place extends Model
 
     public function favorites()
     {
-        return $this->belongsToMany(User::class,'favorite_places','place_id','user_id');
+        return $this->belongsToMany(User::class,'favorite_places','place_id','user_id')->withTimestamps();
     }
     public function photos()
     {
