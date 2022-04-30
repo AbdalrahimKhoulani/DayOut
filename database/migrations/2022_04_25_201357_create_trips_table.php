@@ -16,11 +16,8 @@ return new class extends Migration
         Schema::create('trips', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-           // $table->foreignId('organizer_id')->references('id')->on('organizers')->cascadeOnUpdate()->cascadeOnDelete();
-           // $table->foreignId('trip_status_id')->references('id')->on('trip_statuses')->cascadeOnUpdate()->cascadeOnDelete();
             $table->unsignedBigInteger('organizer_id');
             $table->unsignedBigInteger('trip_status_id');
-
             $table->text('description');
             $table->dateTime('begin_date');
             $table->dateTime('expire_date');
