@@ -27,7 +27,10 @@ Route::prefix('/place')->controller(PlaceController::class)->group(function(){
 
     Route::get('','index');
     Route::get('/popular','popularPlaces');
-    Route::post('/favorite','favorite');
+    Route::middleware('auth:api')->group(function(){
+        Route::post('/favorite','favorite');
+
+    });
 
 });
 
@@ -39,6 +42,11 @@ Route::prefix('/user')->controller(UserController::class)->group(function (){
     Route::post('/promotion/request','requestPromotion');
 
     Route::post('/confirm','confirmAccount');
+
+    Route::middleware('auth:api')->group(function(){
+
+        Route::post('/profile/customer','profileCustomer');
+    });
 });
 
 

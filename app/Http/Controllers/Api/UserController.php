@@ -158,4 +158,14 @@ class UserController extends BaseController
         $confirm_code->code = $code;
         $confirm_code->save();
     }
+
+    public function profileCustomer(Request $request)
+    {
+        $user = User::find($request->customerId);
+        if($user != null)
+        {
+            return $this->sendResponse($user,'Succeeded!');
+        }
+        return $this->sendError('User not found!');
+    }
 }
