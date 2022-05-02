@@ -29,7 +29,7 @@ class PlaceController extends BaseController
 
         if ($favorite == null) {
             $place = Place::find($request->placeId);
-            if ($place != null) {
+            if ($place->count() != 0) {
                 $place->favorites()->attach($request->userId);
                 return $this->sendResponse(null, 'Place added to favorites!');
             }
@@ -37,7 +37,7 @@ class PlaceController extends BaseController
 
         }
             $place = Place::find($request->placeId);
-            if($place != null)
+            if($place->count() != 0)
             {
                 $place->favorites()->detach($request->userId);
                 return $this->sendResponse(null, 'Place removed from favorites!');

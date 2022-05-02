@@ -35,7 +35,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'password'
+        'password',
+        'pivot',
+        'deleted_at'
     ];
 
     public function verifiedAccount()
@@ -75,7 +77,7 @@ class User extends Authenticatable
 
     public function organizerFollow()
     {
-        return $this->belongsToMany(Organizer::class, 'followers', 'organizer_id', 'user_id');
+        return $this->belongsToMany(Organizer::class, 'followers', 'user_id', 'organizer_id');
     }
 
     public function pollChoices()
@@ -95,6 +97,6 @@ class User extends Authenticatable
 
     public function customerTrip()
     {
-        return $this->belongsToMany(Trip::class, 'customer_trips', 'user_id', 'trip_id');
+        return $this->belongsToMany(Trip::class, 'customer_trips', 'customer_id', 'trip_id');
     }
 }

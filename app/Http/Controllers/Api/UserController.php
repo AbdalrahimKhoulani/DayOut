@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Validator;
+use function PHPUnit\Framework\isEmpty;
 
 class UserController extends BaseController
 {
@@ -161,8 +162,8 @@ class UserController extends BaseController
 
     public function profileCustomer(Request $request)
     {
-        $user = User::find($request->customerId);
-        if($user != null)
+        $user = User::withCount(['customerTrip','organizerFollow'])->where('id', $request->customerId)->get();
+        if($user->count() != 0)
         {
             return $this->sendResponse($user,'Succeeded!');
         }
