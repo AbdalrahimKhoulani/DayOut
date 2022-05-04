@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\ConfirmationCode;
 use App\Models\PromotionRequest;
 use App\Models\PromotionStatus;
@@ -11,9 +10,11 @@ use App\Models\User;
 
 use App\Models\UserRole;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use function PHPUnit\Framework\isEmpty;
 
@@ -33,6 +34,7 @@ class UserController extends BaseController
 
         }
     }
+
     public function register(Request $request)
     {
 
@@ -98,7 +100,7 @@ class UserController extends BaseController
         $confirm_code->delete();
 
 
-        $success['token'] = $user->createToken($user->phone_number.$user->password)->plainTextToken;
+        $success['token'] = $user->createToken($user->phone_number . $user->password)->plainTextToken;
 
         return $this->sendResponse($success, "The confirmation process successeded");
     }
@@ -149,7 +151,7 @@ class UserController extends BaseController
     {
         $old_code = ConfirmationCode::where('user_id', '=', $user_id)->first();
         if ($old_code != null) {
-            $old_code.delete();
+            $old_code . delete();
         }
 
         $code = mt_rand(1000, 9999);
@@ -162,11 +164,57 @@ class UserController extends BaseController
 
     public function profileCustomer(Request $request)
     {
-        $user = User::withCount(['customerTrip','organizerFollow'])->where('id', $request->customerId)->get();
-        if($user->count() != 0)
-        {
-            return $this->sendResponse($user,'Succeeded!');
+        $user = User::withCount(['customerTrip', 'organizerFollow'])->where('id', $request->customerId)->get();
+        if ($user->count() != 0) {
+            return $this->sendResponse($user, 'Succeeded!');
         }
         return $this->sendError('User not found!');
+    }
+
+    public function editProfileCustomer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|int',
+            'first_name' => 'regex:/^[\pL\s\-]+$/u',
+            'last_name' => 'regex:/^[\pL\s\-]+$/u',
+            'photo' => 'image',
+            'gender' => 'string'
+
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $user = User::find($request->user_id);
+        if ($user->count() != 0) {
+            if ($request->has('first_name'))
+                $user['first_name'] = $request['first_name'];
+            if ($request->has('last_name'))
+                $user['last_name'] = $request['last_name'];
+            if ($request->has('photo')) {
+                if ($request->has('first_name') && $request->has('last_name'))
+                    $user['photo'] = $this->storeProfileImage($request['first_name'], $request['last_name'], $request['photo']);
+                elseif ($request->has('first_name'))
+                    $user['photo'] = $this->storeProfileImage($request['first_name'], $user['last_name'], $request['photo']);
+                elseif ($request->has('last_name'))
+                    $user['photo'] = $this->storeProfileImage($user['first_name'], $request['last_name'], $request['photo']);
+                else
+                    $user['photo'] = $this->storeProfileImage($user['first_name'], $user['last_name'], $request['photo']);
+
+
+            }
+            if($request->has('gender'))
+                $user['gender'] = $request['gender'];
+            $user->save();
+            return $this->sendResponse($user, 'Edit succeeded!');
+        }
+        return $this->sendError('User not found!');
+
+    }
+
+    private function storeProfileImage($firstname, $lastname, $photo)
+    {
+        Storage::disk('local')->put('public/' . $firstname . $lastname . Carbon::now()->toDateString() . '.' . $photo->extension(), file_get_contents($photo));
+        return Storage::url($firstname . $lastname . Carbon::now()->toDateString() . '.' . $photo->extension());
     }
 }

@@ -10,6 +10,7 @@ class Organizer extends Model
     use HasFactory;
 
     protected $fillable = ['user_id', 'credential_photo'];
+    protected $hidden = ['credential_photo'];
 
     public function user()
     {
@@ -27,5 +28,8 @@ class Organizer extends Model
 
     public function polls(){
         return $this->hasMany(Poll::class,'organizer_id','id');
+    }
+    public function trips(){
+        return $this->hasMany(Trip::class,'organizer_id','id');
     }
 }

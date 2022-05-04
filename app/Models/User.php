@@ -37,7 +37,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'pivot',
-        'deleted_at'
+        'deleted_at',
+        'is_active'
     ];
 
     public function verifiedAccount()

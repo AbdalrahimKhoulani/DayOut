@@ -14,12 +14,12 @@ class PlaceController extends BaseController
 {
     public function index()
     {
-        $places = Place::all();
+        $places = Place::with('photos')->get();
         return $this->sendResponse($places,'Succeeded');
     }
     public function popularPlaces()
     {
-        $places = Place::withCount('placeTrips')->get();
+        $places = Place::with('photos')->withCount('placeTrips')->get();
         $places = collect($places)->sortBy('placeTrips_count')->toArray();
         return $this->sendResponse($places,'Succeeded');
     }
