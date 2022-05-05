@@ -187,6 +187,7 @@ class UserController extends BaseController
         }
         $user = User::find($request->user_id);
         if ($user->count() != 0) {
+
             if ($request->has('first_name'))
                 $user['first_name'] = $request['first_name'];
             if ($request->has('last_name'))
@@ -214,7 +215,7 @@ class UserController extends BaseController
 
     private function storeProfileImage($firstname, $lastname, $photo)
     {
-        Storage::disk('local')->put('public/' . $firstname . $lastname . Carbon::now()->toDateString() . '.' . $photo->extension(), file_get_contents($photo));
-        return Storage::url($firstname . $lastname . Carbon::now()->toDateString() . '.' . $photo->extension());
+        Storage::disk('local')->put('public/user/' . $firstname . $lastname . Carbon::now()->toDateString() . '.' . $photo->extension(), file_get_contents($photo));
+        return Storage::url('user/'.$firstname . $lastname . Carbon::now()->toDateString() . '.' . $photo->extension());
     }
 }
