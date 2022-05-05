@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\PlaceController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\OrganizerController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -46,7 +47,19 @@ Route::prefix('/user')->controller(UserController::class)->group(function (){
     Route::middleware('auth:api')->group(function(){
 
         Route::post('/profile/customer','profileCustomer');
+        Route::post('/profile/customer/edit','editProfileCustomer');
     });
+});
+
+
+Route::prefix('/organizer')->controller(OrganizerController::class)->group(function(){
+
+
+    Route::middleware('auth:api')->group(function(){
+        Route::post('/profile','organizerProfile');
+        Route::post('/profile/edit','editOrganizerProfile');
+    });
+
 });
 
 

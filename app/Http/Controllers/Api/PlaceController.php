@@ -14,12 +14,12 @@ class PlaceController extends BaseController
 {
     public function index()
     {
-        $places = Place::all();
+        $places = Place::with('photos')->get();
         return $this->sendResponse($places,'Succeeded');
     }
     public function popularPlaces()
     {
-        $places = Place::withCount('placeTrips')->get();
+        $places = Place::with('photos')->withCount('placeTrips')->get();
         $places = collect($places)->sortBy('placeTrips_count')->toArray();
         return $this->sendResponse($places,'Succeeded');
     }
@@ -29,7 +29,7 @@ class PlaceController extends BaseController
 
         if ($favorite == null) {
             $place = Place::find($request->placeId);
-            if ($place != null) {
+            if ($place->count() != 0) {
                 $place->favorites()->attach($request->userId);
                 return $this->sendResponse(null, 'Place added to favorites!');
             }
@@ -37,7 +37,7 @@ class PlaceController extends BaseController
 
         }
             $place = Place::find($request->placeId);
-            if($place != null)
+            if($place->count() != 0)
             {
                 $place->favorites()->detach($request->userId);
                 return $this->sendResponse(null, 'Place removed from favorites!');

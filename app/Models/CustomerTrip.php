@@ -11,6 +11,7 @@ class CustomerTrip extends Model
     use HasFactory,SoftDeletes;
     protected $fillable = ['customer_id','trip_id','checkout','rate','rate_comment'];
     protected $dates = ['deleted_at'];
+    protected $hidden = ['pivot','deleted_at'];
 
     public function passengers()
     {
