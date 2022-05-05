@@ -57,7 +57,7 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
 
     Route::middleware('auth:api')->group(function(){
         Route::post('/profile','organizerProfile');
-
+        Route::post('/profile/edit','editOrganizerProfile');
     });
 
 });

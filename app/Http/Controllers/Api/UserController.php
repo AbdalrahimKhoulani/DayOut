@@ -144,7 +144,7 @@ class UserController extends BaseController
             return $this->sendResponse($success, 'The promotion request was successfully sent');
         }
 
-
+     return $this->sendError('Promotion request failure!');
     }
 
     private function createConfirmCodeForUser($user_id)
@@ -173,12 +173,19 @@ class UserController extends BaseController
 
     public function editProfileCustomer(Request $request)
     {
+        if ($request->has('photo')) {
+            $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
+            $request['photo'] = str_replace('data:image/webp;base64,', '', $request['photo']);
+            $request['photo'] = str_replace('data:image/jpeg;base64,', '', $request['photo']);
+            $request['photo'] = str_replace(' ', '+', $request['photo']);
+        }
+
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|int',
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
-            'photo' => 'image',
-            'gender' => 'string'
+            'photo' => 'is_img',
+            'gender' => ['in:male,female']
 
         ]);
 
@@ -215,7 +222,7 @@ class UserController extends BaseController
 
     private function storeProfileImage($firstname, $lastname, $photo)
     {
-        Storage::disk('local')->put('public/user/' . $firstname . $lastname . Carbon::now()->toDateString() . '.' . $photo->extension(), file_get_contents($photo));
-        return Storage::url('user/'.$firstname . $lastname . Carbon::now()->toDateString() . '.' . $photo->extension());
+        Storage::disk('local')->put('public/users/' . $firstname . $lastname . Carbon::now()->toDateString() . '.png', base64_decode($photo));
+        return Storage::url('users/' . $firstname . $lastname . Carbon::now()->toDateString() . '.png');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Validator::extend('is_img',function($attribute, $value, $params, $validator) {
+            $image = base64_decode($value);
+            $f = finfo_open();
+            $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
+            if($result == 'image/png' || $result == 'image/jpeg' || $result == 'image/webp')
+                return true;
+            return false ;
+        });
+
     }
 }
