@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('phone_number')->unique();
             $table->string('password');
-            $table->string('photo');
+            $table->string('photo')->nullable();
             $table->string('gender');
             $table->text('mobile_token')->nullable();
             $table->timestamp('verified_at')->nullable();
