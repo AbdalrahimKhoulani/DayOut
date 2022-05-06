@@ -177,6 +177,7 @@ class UserController extends BaseController
             $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
             $request['photo'] = str_replace('data:image/webp;base64,', '', $request['photo']);
             $request['photo'] = str_replace('data:image/jpeg;base64,', '', $request['photo']);
+            $request['photo'] = str_replace('data:image/bmp;base64,', '', $request['photo']);
             $request['photo'] = str_replace(' ', '+', $request['photo']);
         }
 
@@ -192,6 +193,7 @@ class UserController extends BaseController
         if ($validator->fails()) {
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
+
         $user = User::find($request->user_id);
         if ($user->count() != 0) {
 
@@ -222,7 +224,17 @@ class UserController extends BaseController
 
     private function storeProfileImage($firstname, $lastname, $photo)
     {
-        Storage::disk('local')->put('public/users/' . $firstname . $lastname . Carbon::now()->toDateString() . '.png', base64_decode($photo));
-        return Storage::url('users/' . $firstname . $lastname . Carbon::now()->toDateString() . '.png');
+        $image = base64_decode($photo);
+        $extention = '.png';
+        $f = finfo_open();
+        $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
+        if($result == 'image/jpeg')
+            $extention = '.jpeg';
+        elseif ($result == 'image/webp')
+            $extention = '.webp';
+        elseif($result == 'image/x-ms-bmp')
+            $extention = '.bmp';
+        Storage::disk('local')->put('public/users/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention, $image);
+        return Storage::url('users/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention);
     }
 }

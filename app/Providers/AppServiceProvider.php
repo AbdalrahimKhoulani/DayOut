@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
             $image = base64_decode($value);
             $f = finfo_open();
             $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
-            if($result == 'image/png' || $result == 'image/jpeg' || $result == 'image/webp')
+            if($result == 'image/png' || $result == 'image/jpeg' || $result == 'image/webp' || $result == 'image/x-ms-bmp')
                 return true;
             return false ;
         });
