@@ -44,9 +44,9 @@ class UserController extends BaseController
             'phone_number' => 'required',
             'password' => 'required',
             'confirm_password' => 'required|same:password',
-            'photo' => 'required',
+//            'photo' => 'required',
             'gender' => 'required',
-            'mobile_token' => 'required'
+//            'mobile_token' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -87,9 +87,9 @@ class UserController extends BaseController
             'phone_number' => 'required',
             'password' => 'required',
             'confirm_password' => 'required|same:password',
-            'photo' => 'required',
+//            'photo' => 'required',
             'gender' => 'required',
-            'mobile_token' => 'required',
+//            'mobile_token' => 'required',
 
             'credential_photo'=>'required',
             'description'=>'required'
