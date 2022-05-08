@@ -55,7 +55,7 @@ class PlaceController extends BaseController
         }
         else
         {
-            return $this->sendResponse(null,'Place is not in favorites');
+            return $this->sendResponse(null,'Place is not in favorites!');
         }
     }
 
