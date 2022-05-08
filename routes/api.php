@@ -56,7 +56,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function (){
 
     Route::middleware('auth:api')->group(function(){
 
-        Route::post('/profile/customer','profileCustomer');
+        Route::get('/profile/customer/{id}','profileCustomer');
         Route::post('/profile/customer/edit','editProfileCustomer');
     });
 });
@@ -66,7 +66,7 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
 
 
     Route::middleware('auth:api')->group(function(){
-        Route::post('/profile','organizerProfile');
+        Route::get('/profile/{id}','organizerProfile');
         Route::post('/profile/edit','editOrganizerProfile');
     });
 
