@@ -46,4 +46,17 @@ class PlaceController extends BaseController
 
     }
 
+    public function isFavorite($userId,$placeId)
+    {
+        $favorite = FavoritePlace::where('place_id',$placeId)->where('user_id', $userId)->first();
+        if($favorite!=null)
+        {
+            return $this->sendResponse(null,'Place is in favorites!');
+        }
+        else
+        {
+            return $this->sendResponse(null,'Place is not in favorites!');
+        }
+    }
+
 }

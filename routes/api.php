@@ -37,6 +37,7 @@ Route::prefix('/place')->controller(PlaceController::class)->group(function(){
     Route::get('','index');
     Route::get('/popular','popularPlaces');
     Route::middleware('auth:api')->group(function(){
+        Route::get('/favorite/{userId}/{placeId}','isFavorite');
         Route::post('/favorite','favorite');
 
     });
