@@ -43,7 +43,7 @@ class UserController extends BaseController
             'last_name' => 'required',
             'phone_number' => 'required',
             'password' => 'required',
-            'confirm_password' => 'required|same:password',
+   //         'confirm_password' => 'required|same:password',
 //            'photo' => 'required',
             'gender' => 'required',
 //            'mobile_token' => 'required'
@@ -60,7 +60,7 @@ class UserController extends BaseController
             return $this->sendError('Phone number already exists');
         }
 
-        $role = Role::where('name', '=', 'User')->first();
+        $role = Role::where('name', '=', 'customer')->first();
 
         $input = $request->all();
         $input['password'] = Hash::make($input['password']);
@@ -87,10 +87,9 @@ class UserController extends BaseController
             'phone_number' => 'required',
             'password' => 'required',
             'confirm_password' => 'required|same:password',
-//            'photo' => 'required',
+            'photo' => 'required',
             'gender' => 'required',
-//            'mobile_token' => 'required',
-
+            'mobile_token' => 'required',
             'credential_photo'=>'required',
             'description'=>'required'
         ]);
