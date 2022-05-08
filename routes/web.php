@@ -13,18 +13,43 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', 'WebUI\LoginController@index')->name('home');
+
+Route::post('/login', 'WebUI\LoginController@login')->name('login');
+
+/***
+ * place
+ */
+Route::prefix('/place')->controller('WebUI\PlaceController')->group(function (){
+    Route::get('/','index')->name('place.index');
+
+    Route::get('/create','create')->name('place.create');
+    Route::post('/store','store')->name('place.store');
+
+    Route::get('/{id}','show')->name('place.show');
+
+    Route::get('/{id}/edit','edit')->name('place.edit');
+    Route::put('/{id}','update')->name('place.update');
+
+    Route::delete('/{id}','destroy')->name('place.destroy');
 });
 
-Auth::routes();
+Route::prefix('/customer')->controller('WebUI\CustomerController')->group(function (){
+    Route::get('/','index')->name('customer.index');
 
-Route::get('/home', [App\Http\Controllers\Api\HomeController::class, 'index'])->name('home');
+    Route::get('/{id}','show')->name('customer.show');
 
-Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\Api\HomeController::class, 'index'])->name('home');
+});
 
-Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\Api\HomeController::class, 'index'])->name('home');
+
+
+
+
+
+
+//Auth::routes();
+//
+//Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+

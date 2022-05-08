@@ -71,9 +71,71 @@ class UserController extends BaseController
             'role_id' => $role->id
         ]);
 
-        $this->createConfirmCodeForUser($user->id);
+        $success['user'] = $user;
+        $success['token'] = $user->createToken($user->phone_number.$user->password)->accessToken;
+        //$this->createConfirmCodeForUser($user->id);
 
-        return $this->sendResponse($user, "User registered successfully");
+        return $this->sendResponse($success, "User registered successfully");
+    }
+
+    public function organizerRegister(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'phone_number' => 'required',
+            'password' => 'required',
+            'confirm_password' => 'required|same:password',
+            'photo' => 'required',
+            'gender' => 'required',
+            'mobile_token' => 'required',
+
+            'credential_photo'=>'required',
+            'description'=>'required'
+        ]);
+
+
+
+        if ($validator->fails()) {
+            return $this->sendError('Registration failed', $validator->errors());
+        }
+
+        $checkUser = User::where('phone_number', '=', $request['phone_number'])->get()->first();
+
+        if ($checkUser != null) {
+
+            return $this->sendError('Phone number already exists');
+        }
+
+        $role = Role::where('name', '=', 'User')->first();
+
+        $input = $request->all();
+        $input['password'] = Hash::make($input['password']);
+        $user = User::create($input);
+
+        UserRole::create([
+            'user_id' => $user->id,
+            'role_id' => $role->id
+        ]);
+
+        $promotionStatus = PromotionStatus::where('name', '=', 'Pending')->first();
+
+        $promotionRequest = new PromotionRequest();
+        $promotionRequest->status_id = $promotionStatus->id;
+        $promotionRequest->description = $request['description'];
+        $promotionRequest->user_id = $user->id;
+        $promotionRequest->credential_photo = $request['credential_photo'];
+
+        $promotionRequest->save();
+
+        $success['user'] = $user;
+        $success['token'] = $user->createToken($user->phone_number.$user->password)->accessToken;
+        $success['request_id'] = $promotionRequest->id;
+
+        //$this->createConfirmCodeForUser($user->id);
+
+        return $this->sendResponse($success, "User registered successfully");
     }
 
     public function confirmAccount(Request $request)
@@ -100,9 +162,9 @@ class UserController extends BaseController
         $confirm_code->delete();
 
 
-        $success['token'] = $user->createToken($user->phone_number . $user->password)->plainTextToken;
+        $success['token'] = $user->createToken($user->phone_number.$user->password)->accessToken;
 
-        return $this->sendResponse($success, "The confirmation process successeded");
+        return $this->sendResponse($success, "The confirmation process succeeded");
     }
 
     public function requestPromotion(Request $request)

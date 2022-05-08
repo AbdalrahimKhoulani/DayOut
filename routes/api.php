@@ -19,9 +19,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function () {
-    $user = User::where('phone_number', '=', '0937771725')->get()->first();
-    return $user;
+Route::post('/encode', function (Request $request) {
+//    $user = User::where('phone_number', '=', '0937771725')->get()->first();
+
+    $img = file_get_contents($request['image']);
+    $base64 = base64_encode($img);
+    echo $base64;
+   // return $user;
+});
+
+Route::get('/decode', function () {
+
 });
 
 Route::prefix('/place')->controller(PlaceController::class)->group(function(){
@@ -36,9 +44,11 @@ Route::prefix('/place')->controller(PlaceController::class)->group(function(){
 });
 
 Route::prefix('/user')->controller(UserController::class)->group(function (){
-    Route::get('','index');
+   // Route::get('','index');
     Route::post('/login','login');
     Route::post('/register','register');
+
+    Route::post('/organizer/register','organizerRegister');
 
     Route::post('/promotion/request','requestPromotion');
 

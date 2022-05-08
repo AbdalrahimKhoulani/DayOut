@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('password');
             $table->string('photo')->nullable();
             $table->string('gender');
-            $table->text('mobile_token')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
