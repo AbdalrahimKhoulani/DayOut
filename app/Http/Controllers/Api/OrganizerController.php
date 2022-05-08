@@ -10,9 +10,9 @@ use Illuminate\Http\Request;
 
 class OrganizerController extends BaseController
 {
-    public function organizerProfile(Request $request)
+    public function organizerProfile($id)
     {
-        $organizer = Organizer::with('user')->withCount('followers', 'trips')->where('id', $request->organizer_id)->first();
+        $organizer = Organizer::with('user')->withCount('followers', 'trips')->where('id', $id)->first();
         if ($organizer != null) {
             return $this->sendResponse($organizer, 'Succeeded!');
         }
