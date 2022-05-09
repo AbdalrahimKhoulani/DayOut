@@ -47,9 +47,9 @@ class PlaceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'address' => 'required',
-            'type_id' => 'required',
+            'name' => 'required|regex:/^[\pL\s\-]+$/u',
+            'address' => 'required|string',
+            'type_id' => 'required|int',
             'summary' => 'required',
             'description' => 'required',
             'photos' => 'required',
@@ -116,6 +116,9 @@ class PlaceController extends Controller
     public function edit($id)
     {
         $place = Place::find($id);
+        if($place == null){
+            return view('place.index');
+        }
         $place_types = PlaceType::all();
 
         return view('place.edit')
@@ -128,21 +131,22 @@ class PlaceController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
+     * @return Application|Factory|View
      */
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|regex:/^[\pL\s\-]+$/u',
             'address' => 'required',
-            'type_id' => 'required',
+            'type_id' => 'required|int',
             'summary' => 'required',
             'description' => 'required',
             'photos' => 'required',
         ]);
         //dd($request['photos'][0]);
         $place = Place::find($id);
-        if($place != null){     $place->name = $request['name'];
+        if($place != null){
+            $place->name = $request['name'];
             $place->address = $request['address'];
             $place->type_id = $request['type_id'];
             $place->summary = $request['summary'];
@@ -154,6 +158,8 @@ class PlaceController extends Controller
             return redirect()->route('place.index')
                 ->with('success','Place info updated successfully');
         }
+        else
+            return view('place.index');
     }
 
     /**
