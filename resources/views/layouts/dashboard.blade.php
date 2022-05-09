@@ -23,7 +23,7 @@
                         <a class="nav-link" href="{{route('customer.index')}}">Customers</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Link 3</a>
+                        <a class="nav-link" href="{{route('organizer.index')}}">Organizers</a>
                     </li>
                 </ul>
 

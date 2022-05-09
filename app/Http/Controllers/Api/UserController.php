@@ -179,6 +179,8 @@ class UserController extends BaseController
             return $this->sendError('The account is not exists');
         }
 
+       // dd($user->organizer);
+
         if ($user->organizer != null) {
             return $this->sendError('The account already have organizer role');
         }
@@ -211,7 +213,7 @@ class UserController extends BaseController
     {
         $old_code = ConfirmationCode::where('user_id', '=', $user_id)->first();
         if ($old_code != null) {
-            $old_code . delete();
+            $old_code->delete();
         }
 
         $code = mt_rand(1000, 9999);

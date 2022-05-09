@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\WebUI;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
+use App\Models\User;
 use App\Models\Organizer;
 
-class CustomerController extends Controller
+
+class OrgnizerController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -19,7 +17,7 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        $customers = User::whereNotIn('id',Organizer::select(['user_id'])->get(['user_id']))
+        $customers = User::whereIn('id',Organizer::select(['user_id'])->get(['user_id']))
            ->paginate(10);
         return view('customer.index')->with('customers',$customers);
     }
