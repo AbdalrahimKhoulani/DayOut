@@ -26,7 +26,7 @@ class UserController extends BaseController
             $user = Auth::user();
             $success['id'] = $user->id;
             $success['role'] = $user->roles;
-            $success['token'] = $user->createToken($user->phone_number . $user->password)->accessToken;
+            $success['token'] = $user->createToken($user->phone_number )->accessToken;
 
             return $this->sendResponse($success, 'Login successful!');
         } else {
@@ -39,28 +39,27 @@ class UserController extends BaseController
     {
 
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'phone_number' => 'required',
+            'first_name' => 'required|regex:/^[\pL\s\-]+$/u',
+            'last_name' => 'required|regex:/^[\pL\s\-]+$/u',
+            'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
             'password' => 'required',
-   //         'confirm_password' => 'required|same:password',
-//            'photo' => 'required',
-            'gender' => 'required',
-//            'mobile_token' => 'required'
+            'photo' => 'image',
+            'gender' => 'required|in:Male,Female',
+            'mobile_token' => 'string'
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Registration failed', $validator->errors());
         }
 
-        $checkUser = User::where('phone_number', '=', $request['phone_number'])->get()->first();
+        $checkUser = User::where('phone_number', $request['phone_number'])->get()->first();
 
         if ($checkUser != null) {
 
             return $this->sendError('Phone number already exists');
         }
 
-        $role = Role::where('name', '=', 'customer')->first();
+        $role = Role::where('name', 'customer')->first();
 
         $input = $request->all();
         $input['password'] = Hash::make($input['password']);
@@ -72,7 +71,7 @@ class UserController extends BaseController
         ]);
 
         $success['user'] = $user;
-        $success['token'] = $user->createToken($user->phone_number.$user->password)->accessToken;
+        $success['token'] = $user->createToken($user->phone_number)->accessToken;
         //$this->createConfirmCodeForUser($user->id);
 
         return $this->sendResponse($success, "User registered successfully");
@@ -82,16 +81,16 @@ class UserController extends BaseController
     {
 
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'phone_number' => 'required',
+            'first_name' => 'required|regex:/^[\pL\s\-]+$/u',
+            'last_name' => 'required|regex:/^[\pL\s\-]+$/u',
+            'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
             'password' => 'required',
-            'confirm_password' => 'required|same:password',
-            'photo' => 'required',
-            'gender' => 'required',
-            'mobile_token' => 'required',
+            'photo' => 'image',
+            'gender' => 'required|in:Male,Female',
+            'mobile_token' => 'string',
             'credential_photo'=>'required',
-            'description'=>'required'
+            //'credential_photo'=>'required|is_img',
+            'description'=>'string'
         ]);
 
 
@@ -100,14 +99,14 @@ class UserController extends BaseController
             return $this->sendError('Registration failed', $validator->errors());
         }
 
-        $checkUser = User::where('phone_number', '=', $request['phone_number'])->get()->first();
+        $checkUser = User::where('phone_number', $request['phone_number'])->get()->first();
 
         if ($checkUser != null) {
 
             return $this->sendError('Phone number already exists');
         }
 
-        $role = Role::where('name', '=', 'User')->first();
+        $role = Role::where('name', 'customer')->first();
 
         $input = $request->all();
         $input['password'] = Hash::make($input['password']);
@@ -118,18 +117,18 @@ class UserController extends BaseController
             'role_id' => $role->id
         ]);
 
-        $promotionStatus = PromotionStatus::where('name', '=', 'Pending')->first();
+        $promotionStatus = PromotionStatus::where('name', 'Pending')->first();
 
         $promotionRequest = new PromotionRequest();
         $promotionRequest->status_id = $promotionStatus->id;
-        $promotionRequest->description = $request['description'];
         $promotionRequest->user_id = $user->id;
         $promotionRequest->credential_photo = $request['credential_photo'];
-
+        if($request->has('description'))
+            $promotionRequest->description = $request['description'];
         $promotionRequest->save();
 
         $success['user'] = $user;
-        $success['token'] = $user->createToken($user->phone_number.$user->password)->accessToken;
+        $success['token'] = $user->createToken($user->phone_number)->accessToken;
         $success['request_id'] = $promotionRequest->id;
 
         //$this->createConfirmCodeForUser($user->id);
@@ -169,13 +168,13 @@ class UserController extends BaseController
     public function requestPromotion(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone_number' => 'required',
+            'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
             'password' => 'required',
-            'description' => 'required',
+            'description' => 'string',
             'credential_photo' => 'required',
         ]);
 
-        $user = User::where('phone_number', '=', $request['phone_number'])->first();
+        $user = User::where('phone_number', $request['phone_number'])->first();
         if ($user == null) {
             return $this->sendError('The account is not exists');
         }
@@ -192,10 +191,10 @@ class UserController extends BaseController
 
             $promotionRequest = new PromotionRequest();
             $promotionRequest->status_id = $promotionStatus->id;
-            $promotionRequest->description = $request['description'];
             $promotionRequest->user_id = Auth::id();
             $promotionRequest->credential_photo = $request['credential_photo'];
-
+            if($request->has('description'))
+                $promotionRequest->description = $request['description'];
             $promotionRequest->save();
 
 
@@ -257,7 +256,7 @@ class UserController extends BaseController
         }
 
         $user = User::find($request->user_id);
-        if ($user->count() != 0) {
+        if ($user != null) {
 
             if ($request->has('first_name'))
                 $user['first_name'] = $request['first_name'];

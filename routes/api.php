@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 Route::post('/encode', function (Request $request) {
 //    $user = User::where('phone_number', '=', '0937771725')->get()->first();
 

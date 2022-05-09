@@ -33,7 +33,7 @@ class OrganizerController extends BaseController
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
             'photo' => 'is_img',
-            'gender' => ['in:male,female'],
+            'gender' => ['in:Male,Female'],
             'bio' => 'string'
 
         ]);
