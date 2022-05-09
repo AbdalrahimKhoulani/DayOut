@@ -13,20 +13,21 @@ class UserFactory extends Factory
 {
 
     /**
-     * Define the model's default state.
+     * Define the model's default s tate.
      *
      * @return array<string, mixed>
      */
     public function definition()
     {
         return [
-            'first_name' => $this->faker->name(),
-            'last_name' => $this->faker->name,
+            'first_name' => 'ahmed',
+            'last_name' => 'mohamad',
             'password' => Hash::make('123'), // password
             'photo' => $this->faker->imageUrl,
             'gender' => 'male',
-            'phone_number' => $this->faker->phoneNumber,
-            'confirm_at' => $this->faker->dateTime,
+            'email' => 'ahmed.mohamad@gmail.com',
+            'phone_number' => '0981289706',
+            'verified_at' => $this->faker->dateTime,
             'is_active' => $this->faker->boolean,
         ];
     }
@@ -45,3 +46,5 @@ class UserFactory extends Factory
         });
     }
 }
+
+// http://10.0.2.2:8000/

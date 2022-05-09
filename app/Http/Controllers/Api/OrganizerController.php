@@ -10,9 +10,9 @@ use Illuminate\Http\Request;
 
 class OrganizerController extends BaseController
 {
-    public function organizerProfile(Request $request)
+    public function organizerProfile($id)
     {
-        $organizer = Organizer::with('user')->withCount('followers', 'trips')->where('id', $request->organizer_id)->first();
+        $organizer = Organizer::with('user')->withCount('followers', 'trips')->where('id', $id)->first();
         if ($organizer != null) {
             return $this->sendResponse($organizer, 'Succeeded!');
         }
@@ -33,7 +33,7 @@ class OrganizerController extends BaseController
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
             'photo' => 'is_img',
-            'gender' => ['in:male,female'],
+            'gender' => ['in:Male,Female'],
             'bio' => 'string'
 
         ]);

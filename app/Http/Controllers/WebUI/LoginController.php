@@ -19,7 +19,7 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone_number' => 'required',
+            'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
             'password' => 'required'
         ]);
         if (Auth::attempt(['phone_number' => $request['phone_number'], 'password' => $request['password']])) {

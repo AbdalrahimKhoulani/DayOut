@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 Route::post('/encode', function (Request $request) {
 //    $user = User::where('phone_number', '=', '0937771725')->get()->first();
 
@@ -37,6 +38,7 @@ Route::prefix('/place')->controller(PlaceController::class)->group(function(){
     Route::get('','index');
     Route::get('/popular','popularPlaces');
     Route::middleware('auth:api')->group(function(){
+        Route::get('/favorite/{userId}/{placeId}','isFavorite');
         Route::post('/favorite','favorite');
 
     });
@@ -56,7 +58,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function (){
 
     Route::middleware('auth:api')->group(function(){
 
-        Route::post('/profile/customer','profileCustomer');
+        Route::get('/profile/customer/{id}','profileCustomer');
         Route::post('/profile/customer/edit','editProfileCustomer');
     });
 });
@@ -66,7 +68,7 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
 
 
     Route::middleware('auth:api')->group(function(){
-        Route::post('/profile','organizerProfile');
+        Route::get('/profile/{id}','organizerProfile');
         Route::post('/profile/edit','editOrganizerProfile');
     });
 
