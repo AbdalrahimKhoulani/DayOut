@@ -39,7 +39,7 @@
                     {{--                    </ul>--}}
 
                     @auth
-                        <a class="btn login-btn-outline my-2 my-sm-0">{{\Illuminate\Support\Facades\Auth::user()->first_name . ' ' .\Illuminate\Support\Facades\Auth::user()->last_name  }}</a>
+                        <a class="btn login-btn-outline my-2 my-sm-0" href="{{route('logout.perform')}}">{{\Illuminate\Support\Facades\Auth::user()->first_name . ' ' .\Illuminate\Support\Facades\Auth::user()->last_name  }}</a>
                     @else
                         <a class="btn login-btn-outline my-2 my-sm-0">Login</a>
                     @endauth

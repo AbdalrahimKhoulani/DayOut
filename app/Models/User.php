@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -40,6 +41,20 @@ class User extends Authenticatable
         'deleted_at',
         'is_active'
     ];
+
+    public function isAdmin(){
+        $adminRole = Role::where('name','=','Admin')->first();
+
+        //  $b = in_array($adminRole,$user->roles );
+
+        $isAdmin= false;
+        foreach (Auth::user()->roles as $role) {
+            if($adminRole->id==$role->id)
+            $isAdmin = true;
+        }
+
+        return $isAdmin;
+    }
 
     public function verifiedAccount()
     {

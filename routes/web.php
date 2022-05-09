@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Role;
+use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,14 +16,37 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/admin',function(){
+
+    // $customers = User::whereNotIn('id',Organizer::select(['user_id'])->get(['user_id']))
+
+
+    $user = User::find(2);
+    $adminRole = Role::where('name','=','Admin')->first();
+
+    //  $b = in_array($adminRole,$user->roles );
+
+    $b= false;
+    foreach ($user->roles as $role) {
+        if($adminRole->id==$role->id)
+        $b = true;
+        # code...
+    }
+
+
+    dd($b);
+});
+
 Route::get('/', 'WebUI\LoginController@index')->name('home');
 
-Route::post('/login', 'WebUI\LoginController@login')->name('login');
+Route::get('/login', 'WebUI\LoginController@index')->name('login');
+Route::post('/user/login', 'WebUI\LoginController@login')->name('login.perform');
+Route::get('/logout','WebUI\LogoutController@logout')->name('logout.perform');
 
 /***
  * place
  */
-Route::prefix('/place')->controller('WebUI\PlaceController')->group(function (){
+Route::prefix('/place')->middleware(['auth','checkAdmin'])->controller('WebUI\PlaceController')->group(function (){
     Route::get('/','index')->name('place.index');
 
     Route::get('/create','create')->name('place.create');
@@ -34,10 +60,18 @@ Route::prefix('/place')->controller('WebUI\PlaceController')->group(function (){
     Route::delete('/{id}','destroy')->name('place.destroy');
 });
 
-Route::prefix('/customer')->controller('WebUI\CustomerController')->group(function (){
+Route::prefix('/customer')->middleware(['auth','checkAdmin'])->controller('WebUI\CustomerController')->group(function (){
     Route::get('/','index')->name('customer.index');
 
     Route::get('/{id}','show')->name('customer.show');
+
+
+});
+
+Route::prefix('/organizer')->middleware(['auth','checkAdmin'])->controller('WebUI\OrgnizerController')->group(function (){
+    Route::get('/','index')->name('organizer.index');
+
+    Route::get('/{id}','show')->name('organizer.show');
 
 
 });
