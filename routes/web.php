@@ -16,25 +16,23 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/admin',function(){
+Route::get('/admin/{id}',function($id){
 
-    // $customers = User::whereNotIn('id',Organizer::select(['user_id'])->get(['user_id']))
-
-
-    $user = User::find(2);
-    $adminRole = Role::where('name','=','Admin')->first();
-
-    //  $b = in_array($adminRole,$user->roles );
-
-    $b= false;
-    foreach ($user->roles as $role) {
-        if($adminRole->id==$role->id)
-        $b = true;
-        # code...
-    }
+//    FileContentResult
 
 
-    dd($b);
+    $photo = \App\Models\PlacePhotos::find($id);
+
+
+    $img_data = base64_decode($photo->path);
+    $image = imagecreatefromstring($img_data);
+
+    $finfo = finfo_open();
+    $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
+    header('Content-Type: image/'.str_replace('image/','',$extension));
+    return imagejpeg($image);
+
+
 });
 
 Route::get('/', 'WebUI\LoginController@index')->name('home');
