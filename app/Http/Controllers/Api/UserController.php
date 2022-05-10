@@ -8,6 +8,7 @@ use App\Models\PromotionStatus;
 use App\Models\Role;
 use App\Models\User;
 
+
 use App\Models\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -85,7 +86,7 @@ class UserController extends BaseController
             'last_name' => 'required|regex:/^[\pL\s\-]+$/u',
             'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
             'password' => 'required',
-            'photo' => 'image',
+            'photo' => 'string',
             'gender' => 'required|in:Male,Female',
             'mobile_token' => 'string',
             'credential_photo'=>'required',
@@ -299,5 +300,17 @@ class UserController extends BaseController
             $extention = '.bmp';
         Storage::disk('local')->put('public/users/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention, $image);
         return Storage::url('users/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention);
+    }
+
+    public function profilePhoto($id){
+        $user = User::find($id);
+
+        $img_data = base64_decode($user->photo);
+        $image = imagecreatefromstring($img_data);
+
+        $finfo = finfo_open();
+        $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
+        header('Content-Type: image/'.str_replace('image/','',$extension));
+        return imagejpeg($image);
     }
 }

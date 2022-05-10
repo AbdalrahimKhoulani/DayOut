@@ -20,58 +20,47 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-Route::post('/encode', function (Request $request) {
-//    $user = User::where('phone_number', '=', '0937771725')->get()->first();
+Route::prefix('/place')->controller(PlaceController::class)->group(function () {
 
-    $img = file_get_contents($request['image']);
-    $base64 = base64_encode($img);
-    echo $base64;
-   // return $user;
-});
+    Route::get('', 'index');
+    Route::get('/popular', 'popularPlaces');
 
-Route::get('/decode', function () {
+    Route::get('/photo/{id}', 'placePhoto');
 
-});
-
-Route::prefix('/place')->controller(PlaceController::class)->group(function(){
-
-    Route::get('','index');
-    Route::get('/popular','popularPlaces');
-    Route::middleware('auth:api')->group(function(){
-        Route::get('/favorite/{userId}/{placeId}','isFavorite');
-        Route::post('/favorite','favorite');
-
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/favorite/{userId}/{placeId}', 'isFavorite');
+        Route::post('/favorite', 'favorite');
     });
-
 });
 
-Route::prefix('/user')->controller(UserController::class)->group(function (){
-   // Route::get('','index');
-    Route::post('/login','login');
-    Route::post('/register','register');
+Route::prefix('/user')->controller(UserController::class)->group(function () {
+    // Route::get('','index');
+    Route::post('/login', 'login');
+    Route::post('/register', 'register');
 
-    Route::post('/organizer/register','organizerRegister');
+    Route::post('/organizer/register', 'organizerRegister');
 
-    Route::post('/promotion/request','requestPromotion');
+    Route::post('/promotion/request', 'requestPromotion');
 
-    Route::post('/confirm','confirmAccount');
+   // Route::post('/confirm', 'confirmAccount');
 
-    Route::middleware('auth:api')->group(function(){
+    Route::get('/profile/{id}/photo', 'profilePhoto');
 
-        Route::get('/profile/customer/{id}','profileCustomer');
-        Route::post('/profile/customer/edit','editProfileCustomer');
+    Route::middleware('auth:api')->group(function () {
+
+
+
+        Route::get('/profile/customer/{id}', 'profileCustomer');
+        Route::post('/profile/customer/edit', 'editProfileCustomer');
     });
 });
 
 
-Route::prefix('/organizer')->controller(OrganizerController::class)->group(function(){
+Route::prefix('/organizer')->controller(OrganizerController::class)->group(function () {
 
 
-    Route::middleware('auth:api')->group(function(){
-        Route::get('/profile/{id}','organizerProfile');
-        Route::post('/profile/edit','editOrganizerProfile');
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/profile/{id}', 'organizerProfile');
+        Route::post('/profile/edit', 'editOrganizerProfile');
     });
-
 });
-
-

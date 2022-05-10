@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use  App\Http\Controllers\Api\BaseController;
 use function PHPUnit\Framework\isEmpty;
+use App\Models\PlacePhotos;
 
 class PlaceController extends BaseController
 {
@@ -57,6 +58,19 @@ class PlaceController extends BaseController
         {
             return $this->sendResponse(null,'Place is not in favorites!');
         }
+    }
+
+    public function placePhoto($id){
+        $photo = PlacePhotos::find($id);
+
+
+        $img_data = base64_decode($photo->path);
+        $image = imagecreatefromstring($img_data);
+
+        $finfo = finfo_open();
+        $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
+        header('Content-Type: image/'.str_replace('image/','',$extension));
+        return imagejpeg($image);
     }
 
 }
