@@ -228,7 +228,7 @@ class UserController extends BaseController
     public function profileCustomer($id)
     {
 
-        $user = User::withCount(['customerTrip', 'organizerFollow'])->where('id', $id)->get();
+        $user = User::withCount(['customerTrip', 'organizerFollow'])->where('id', $id)->first();
         if ($user->count() != 0) {
             return $this->sendResponse($user, 'Succeeded!');
         }
