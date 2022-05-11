@@ -257,7 +257,7 @@ class UserController extends BaseController
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
 
-        $user = User::find($id);
+        $user = User::find($id)->first();
         if ($user != null) {
 
             if ($request->has('first_name'))
