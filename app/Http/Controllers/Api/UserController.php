@@ -280,6 +280,7 @@ class UserController extends BaseController
             if($request->has('gender'))
                 $user['gender'] = $request['gender'];
             $user->save();
+            $user->makeHidden('photo');
             return $this->sendResponse($user, 'Edit succeeded!');
         }
         return $this->sendError('User not found!');

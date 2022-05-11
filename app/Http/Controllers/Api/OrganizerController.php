@@ -19,7 +19,7 @@ class OrganizerController extends BaseController
         return $this->sendError('Organizer not found!');
     }
 
-    public function editOrganizerProfile(Request $request)
+    public function editOrganizerProfile(Request $request , $id)
     {
         if ($request->has('photo')) {
             $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
@@ -29,7 +29,6 @@ class OrganizerController extends BaseController
             $request['photo'] = str_replace(' ', '+', $request['photo']);
         }
         $validator = Validator::make($request->all(), [
-            'organizer_id' => 'required|int',
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
             'photo' => 'is_img',
@@ -41,7 +40,7 @@ class OrganizerController extends BaseController
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
 
-        $organizer = Organizer::find($request['organizer_id'])->with('user')->first();
+        $organizer = Organizer::where('user_id',$id)->with('user')->first();
         if ($organizer != null) {
             if ($request->has('first_name'))
                 $organizer['user']->first_name = $request['first_name'];
@@ -65,6 +64,7 @@ class OrganizerController extends BaseController
                 $organizer['bio'] = $request['bio'];
             $organizer['user']->save();
             $organizer->save();
+            $organizer['user']->makeHidden('photo');
             return $this->sendResponse($organizer, 'Edit succeeded!');
         }
         return $this->sendError('Organizer not found!');

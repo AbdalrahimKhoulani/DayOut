@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
 //            $table->foreignId('trip_id')->references('id')->on('trips')->cascadeOnUpdate()->cascadeOnDelete();
             $table->unsignedBigInteger('trip_id');
-            $table->string('path');
+            $table->longText('path');
             $table->timestamps();
         });
     }
