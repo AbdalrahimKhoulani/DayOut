@@ -36,6 +36,10 @@ class OrganizerController extends BaseController
             'bio' => 'string'
 
         ]);
+        if(count($request->all())>1)
+        {
+            return $this->sendError('No data were sent!');
+        }
         if ($validator->fails()) {
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
