@@ -49,7 +49,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
 
         Route::get('/profile/customer/{id}', 'profileCustomer');
-        Route::put('/profile/customer/edit/{id}', 'editProfileCustomer');
+        Route::post('/profile/customer/edit/{id}', 'editProfileCustomer');
     });
 });
 
@@ -59,6 +59,6 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
 
     Route::middleware('auth:api')->group(function () {
         Route::get('/profile/{id}', 'organizerProfile');
-        Route::put('/profile/edit/{id}', 'editOrganizerProfile');
+        Route::post('/profile/edit/{id}', 'editOrganizerProfile');
     });
 });
