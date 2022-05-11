@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('place_photos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('place_id');
-            $table->string('path');
+            $table->longText('path');
             $table->timestamps();
         });
     }

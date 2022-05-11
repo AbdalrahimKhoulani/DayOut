@@ -12,6 +12,7 @@ class Place extends Model
     protected $fillable = ['name','address','summary','description'];
     protected $dates = ['deleted_at'];
 
+
     public function placeTrips()
     {
         return $this->hasMany(PlaceTrip::class);

@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('/place')->controller(PlaceController::class)->group(function () {
 
     Route::get('', 'index');
-    Route::get('/popular', 'popularPlaces');
+    Route::get('/popular/{id}', 'popularPlaces');
 
     Route::get('/photo/{id}', 'placePhoto');
 
@@ -48,10 +48,8 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 
     Route::middleware('auth:api')->group(function () {
 
-
-
         Route::get('/profile/customer/{id}', 'profileCustomer');
-        Route::post('/profile/customer/edit', 'editProfileCustomer');
+        Route::put('/profile/customer/edit/{id}', 'editProfileCustomer');
     });
 });
 
@@ -61,6 +59,6 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
 
     Route::middleware('auth:api')->group(function () {
         Route::get('/profile/{id}', 'organizerProfile');
-        Route::post('/profile/edit', 'editOrganizerProfile');
+        Route::put('/profile/edit/{id}', 'editOrganizerProfile');
     });
 });
