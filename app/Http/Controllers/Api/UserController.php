@@ -235,7 +235,7 @@ class UserController extends BaseController
         return $this->sendError('User not found!');
     }
 
-    public function editProfileCustomer(Request $request)
+    public function editProfileCustomer(Request $request,$id)
     {
         if ($request->has('photo')) {
             $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
@@ -246,7 +246,6 @@ class UserController extends BaseController
         }
 
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required|int',
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
             'photo' => 'is_img',
@@ -258,7 +257,7 @@ class UserController extends BaseController
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
 
-        $user = User::find($request->user_id);
+        $user = User::find($id);
         if ($user != null) {
 
             if ($request->has('first_name'))
