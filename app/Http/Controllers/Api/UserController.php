@@ -10,7 +10,7 @@ use App\Models\User;
 
 
 use App\Models\UserRole;
-use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -235,7 +235,7 @@ class UserController extends BaseController
         return $this->sendError('User not found!');
     }
 
-    public function editProfileCustomer(Request $request,$id)
+    public function editProfileCustomer(Request $request)
     {
         if ($request->has('photo')) {
             $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
@@ -245,11 +245,15 @@ class UserController extends BaseController
             $request['photo'] = str_replace(' ', '+', $request['photo']);
         }
 
+        $input = $request->all();
+
+
         $validator = Validator::make($request->all(), [
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
             'photo' => 'is_img',
-            'gender' => ['in:male,female']
+            'gender' => ['in:male,female'],
+            'email' => 'string'
 
         ]);
 
@@ -257,7 +261,7 @@ class UserController extends BaseController
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
 
-        $user = User::find($id)->first();
+        $user = User::find($id);
         if ($user != null) {
 
             if ($request->has('first_name'))
@@ -278,6 +282,8 @@ class UserController extends BaseController
             }
             if($request->has('gender'))
                 $user['gender'] = $request['gender'];
+            if($request->has('email'))
+                $user['email'] = $request['email'];
             $user->save();
             $user->makeHidden('photo');
             return $this->sendResponse($user, 'Edit succeeded!');
