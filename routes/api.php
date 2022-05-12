@@ -45,10 +45,11 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
    // Route::post('/confirm', 'confirmAccount');
 
     Route::get('/profile/{id}/photo', 'profilePhoto');
+    Route::get('/profile/customer/{id}', 'profileCustomer');
+
 
     Route::middleware('auth:api')->group(function () {
 
-        Route::get('/profile/customer/{id}', 'profileCustomer');
         Route::post('/profile/customer/edit', 'editProfileCustomer');
     });
 });
