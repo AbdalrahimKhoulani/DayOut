@@ -55,10 +55,10 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 
 
 Route::prefix('/organizer')->controller(OrganizerController::class)->group(function () {
-
+    Route::get('/profile/{id}', 'organizerProfile');
 
     Route::middleware('auth:api')->group(function () {
-        Route::get('/profile/{id}', 'organizerProfile');
-        Route::post('/profile/edit/{id}', 'editOrganizerProfile');
+
+        Route::post('/profile/edit', 'editOrganizerProfile');
     });
 });
