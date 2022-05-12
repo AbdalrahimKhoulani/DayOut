@@ -10,7 +10,6 @@ class Organizer extends Model
     use HasFactory;
 
     protected $fillable = ['user_id', 'credential_photo'];
-    protected $hidden = ['credential_photo'];
 
     public function user()
     {

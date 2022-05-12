@@ -24,33 +24,37 @@ class PlaceController extends BaseController
     public function popularPlaces($id)
     {
 
-
+        error_log('Popular places request');
         $places = Place::with('photos:id,place_id')->withCount('placeTrips')->withCount(['favorites' => function ($query) use ($id) {
             $query->where('user_id', $id);
         }])->get();
         $places = collect($places)->sortBy('placeTrips_count')->toArray();
+        error_log('Popular places request succeeded!');
         return $this->sendResponse($places, 'Succeeded');
 
     }
 
     public function favorite(Request $request)
     {
+        error_log('Add/Remove to/from favorite request');
         $favorite = FavoritePlace::where('place_id', $request->placeId)->where('user_id', $request->userId)->first();
 
         if ($favorite == null) {
             $place = Place::find($request->placeId);
-            if ($place->count() != 0) {
+            if ($place != null) {
                 $place->favorites()->attach($request->userId);
                 return $this->sendResponse(null, 'Place added to favorites!');
             }
+            error_log('Place not found!');
             return $this->sendError('Place not found!');
 
         }
         $place = Place::find($request->placeId);
-        if ($place->count() != 0) {
+        if ($place != null) {
             $place->favorites()->detach($request->userId);
             return $this->sendResponse(null, 'Place removed from favorites!');
         }
+        error_log('Place not found!');
         return $this->sendError('Place not found!');
 
     }

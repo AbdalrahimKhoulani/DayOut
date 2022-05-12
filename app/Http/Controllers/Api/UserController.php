@@ -23,15 +23,18 @@ class UserController extends BaseController
 {
     public function login(Request $request)
     {
+        error_log('Login request');
         if (Auth::attempt(['phone_number' => $request->phone_number, 'password' => $request->password])) {
             $user = Auth::user();
             $success['id'] = $user->id;
             $success['role'] = $user->roles;
             $success['token'] = $user->createToken($user->phone_number )->accessToken;
 
+            error_log('Login successful!');
             return $this->sendResponse($success, 'Login successful!');
         } else {
-            return $this->sendError('Login information are not correct!', ['error' => 'Unauthorized'], 406);
+            error_log('Login information are not correct!');
+            return $this->sendError('Login information are not correct!', ['error' => 'Unauthorized'], 404);
 
         }
     }
@@ -227,16 +230,20 @@ class UserController extends BaseController
 
     public function profileCustomer($id)
     {
-
-        $user = User::withCount(['customerTrip', 'organizerFollow'])->where('id', $id)->first();
-        if ($user->count() != 0) {
+        error_log('Customer profile request');
+        $user = User::select(['id','first_name','last_name','email','phone_number','gender'])->withCount(['customerTrip', 'organizerFollow'])->find($id);
+        if ($user != null) {
+            error_log('Customer profile request succeeded!');
             return $this->sendResponse($user, 'Succeeded!');
         }
+        error_log('User not found!');
         return $this->sendError('User not found!');
     }
 
     public function editProfileCustomer(Request $request)
     {
+        error_log('Customer profile edit request');
+        $id = Auth::id();
         if ($request->has('photo')) {
             $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
             $request['photo'] = str_replace('data:image/webp;base64,', '', $request['photo']);
@@ -245,19 +252,17 @@ class UserController extends BaseController
             $request['photo'] = str_replace(' ', '+', $request['photo']);
         }
 
-        $input = $request->all();
 
 
         $validator = Validator::make($request->all(), [
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
             'photo' => 'is_img',
-            'gender' => ['in:male,female'],
-            'email' => 'string'
-
+            'gender' => ['in:Male,Female'],
         ]);
 
         if ($validator->fails()) {
+            error_log($validator->errors());
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
 
@@ -286,8 +291,10 @@ class UserController extends BaseController
                 $user['email'] = $request['email'];
             $user->save();
             $user->makeHidden('photo');
+            error_log('Customer profile edit request succeeded!');
             return $this->sendResponse($user, 'Edit succeeded!');
         }
+        error_log('User not found!');
         return $this->sendError('User not found!');
 
     }
