@@ -49,7 +49,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
 
         Route::get('/profile/customer/{id}', 'profileCustomer');
-        Route::post('/profile/customer/edit/{id}', 'editProfileCustomer');
+        Route::post('/profile/customer/edit', 'editProfileCustomer');
     });
 });
 
