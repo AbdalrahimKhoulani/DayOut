@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\PlaceController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\OrganizerController;
+use App\Http\Controllers\Api\TripController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -61,5 +62,16 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/edit', 'editOrganizerProfile');
+
     });
 });
+
+Route::prefix('/organizer')->controller(TripController::class)->group(function () {
+
+    Route::middleware('auth:api')->group(function () {
+
+        Route::get('/trip','organizerTrip');
+
+    });
+});
+
