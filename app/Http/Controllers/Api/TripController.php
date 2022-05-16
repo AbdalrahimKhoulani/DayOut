@@ -101,6 +101,8 @@ class TripController extends BaseController
         $trip->trip_status_id = $trip_status->id;
         $trip->save();
         $trip->types()->sync($types);
+        $trip->load('tripPhotos');
+        $trip->load('placeTrips');
         error_log('Add trip succeeded!');
         return $this->sendResponse($trip,'Succeeded!');
     }
@@ -131,6 +133,8 @@ class TripController extends BaseController
             $tripPhoto->trip()->associate($trip->id);
             $tripPhoto->save();
         }
+        $trip->load('types');
+        $trip->load('placeTrips');
         error_log('Add trip photos succeeded!');
         return $this->sendResponse($trip,'Succeeded!');
     }
@@ -163,6 +167,8 @@ class TripController extends BaseController
             $placeTrip->trip()->associate($trip->id);
             $placeTrip->save();
         }
+        $trip->load('tripPhotos');
+        $trip->load('types');
         error_log('Add places to trip succeeded!');
         return $this->sendResponse($trip,'Succeeded!');
     }
