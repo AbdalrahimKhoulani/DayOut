@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\PlaceController;
+use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\OrganizerController;
 use App\Models\User;
@@ -51,6 +52,14 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/customer/edit', 'editProfileCustomer');
+    });
+});
+
+Route::prefix('/trip')->controller(TripController::class)->group(function (){
+
+    Route::middleware('auth:api')->group(function (){
+
+        Route::post('/create','createTrip');
     });
 });
 
