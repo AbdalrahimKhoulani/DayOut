@@ -88,7 +88,6 @@ class TripController extends BaseController
             'expire_date' => 'required',
             'end_booking' => 'required',
             'price' => 'numeric',
-            'types' => 'required'
         ]);
 
         if ($validator->fails()) {
