@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\PlaceController;
 use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\OrganizerController;
-use App\Http\Controllers\Api\TripController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +60,8 @@ Route::prefix('/trip')->controller(TripController::class)->group(function (){
     Route::middleware('auth:api')->group(function (){
 
         Route::post('/create','createTrip');
+        Route::post('/create/add/photos','addTripPhotos');
+        Route::post('/create/add/places','addPlacesToTrip');
     });
 });
 

@@ -25,7 +25,8 @@ class PlaceController extends BaseController
     {
 
         error_log('Popular places request');
-        $places = Place::with('photos:id,place_id')->withCount('placeTrips')->withCount(['favorites' => function ($query) use ($id) {
+        $places = Place::with('photos:id,place_id')->withCount('placeTrips')
+            ->withCount(['favorites' => function ($query) use ($id) {
             $query->where('user_id', $id);
         }])->get();
         $places = collect($places)->sortBy('placeTrips_count')->toArray();
