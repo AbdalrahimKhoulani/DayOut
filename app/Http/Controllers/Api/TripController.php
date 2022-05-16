@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\BaseController;
+use App\Models\CustomerTrip;
+use App\Models\Passenger;
 use App\Models\Trip;
 use App\Models\User;
 use Carbon\Carbon;
@@ -23,11 +25,7 @@ class TripController extends BaseController
             return $this->sendError('User not found');
         }
 
-
-
         $organizer = $user->organizer;
-
-
         if($organizer == null){
             return $this->sendError('This account not authorized',[],401);
         }
@@ -90,8 +88,6 @@ class TripController extends BaseController
             error_log($validator->errors());
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
-        $photos = $request['photos'];
-        $places = $request['places'];
         $trip = new Trip;
         $trip->title = $request['title'];
         $trip->organizer()->associate($organizer->id);
@@ -104,12 +100,7 @@ class TripController extends BaseController
         $trip_status = TripStatus::where('name','available')->first();
         $trip->trip_status_id = $trip_status->id;
         $trip->save();
-        for($i=0;$i<count($types);$i++)
-        {
-            $trip->types()->attach($types[$i]['type_id']);
-        }
-
-
+        $trip->types()->sync($types);
         error_log('Add trip succeeded!');
         return $this->sendResponse($trip,'Succeeded!');
     }
@@ -175,6 +166,110 @@ class TripController extends BaseController
         error_log('Add places to trip succeeded!');
         return $this->sendResponse($trip,'Succeeded!');
     }
+    public function getTripDetails($id)
+    {
+        error_log('Get trip details!');
+        $trip = Trip::find($id)
+            ->with(['placeTrips','tripPhotos'=>function($query){
+                $query->select(['id','trip_id']);
+            }])->first();
+        if($trip == null)
+        {
+            error_log('Trip not found!');
+            return $this->sendError('Trip not found!');
+        }
+        error_log('Get trip details!');
+        return $this->sendResponse($trip,'Succeeded!');
+    }
+    public function bookTrip(Request $request)
+    {
+        error_log('Book trip request!');
+        $id = Auth::id();
+        $user = User::find($id);
+        if($user == null)
+        {
+            error_log('User not found!');
+            return $this->sendError('User not found!');
+        }
 
+        $validator = Validator::make($request->all(),[
+            'trip_id' => 'required',
+            'passengers' => 'required'
+        ]);
+        if ($validator->fails())
+        {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $trip = Trip::find($request['trip_id'])->with(['organizer' => function ($query) use ($id) {
+            $query->where('user_id',$id);
+        }])->first();
+        if($trip->organizer != null)
+        {
+            error_log('User is the one that created the trip!');
+            return $this->sendError('User is the one that created the trip!',[],405);
+        }
+        $passengers = $request['passengers'];
+        $customerTrip = new CustomerTrip();
+        $customerTrip->trip()->associate($request['trip_id']);
+        $customerTrip->user()->associate($id);
+        $customerTrip->checkout = false;
+        $customerTrip->save();
+        for($i=0 ; $i<count($passengers);$i++)
+        {
+            $passenger = new Passenger;
+            $passenger->passenger_name = $passengers[$i]['name'];
+            $passenger->customerTrip()->associate($customerTrip->id);
+            $passenger->save();
+        }
+        error_log('book trip request succeeded!');
+        return $this->sendResponse($customerTrip,'Succeeded!');
+    }
 
+    public function rateTrip(Request $request)
+    {
+        error_log('Rate trip request');
+        $id = Auth::id();
+        $validator = Validator::make($request->all(),[
+            'trip_id' => 'required',
+            'rate' => 'required|integer|between:1,5'
+        ]);
+        if ($validator->fails())
+        {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $customerTrip = CustomerTrip::where('trip_id',$request['trip_id'])->where('customer_id',$id)->first();
+        if($customerTrip == null)
+        {
+            error_log('No customer trip!');
+            return $this->sendError('No customer trip!');
+        }
+        $customerTrip->rate = $request['rate'];
+        $customerTrip->save();
+        error_log('Rate trip succeeded!');
+        return $this->sendResponse($customerTrip,'Succeeded!');
+    }
+
+    public function getTrips()
+    {
+        error_log('Get trips request!');
+        $trips = Trip::with(['placeTrips','tripPhotos'=>function($query){
+                $query->select(['id','trip_id']);
+            }])->paginate(10);
+
+        foreach ($trips as $trip){
+
+            if(Carbon::now()<$trip['begin_date'])
+                $trip['status'] = 'Upcoming';
+            else if($trip['begin_date']<Carbon::now() &&
+                Carbon::now() < $trip['expire_date'])
+                $trip['status']='Active';
+            else if($trip['expire_date']<Carbon::now())
+                $trip['status'] = 'History';
+        }
+
+        error_log('Get trips request succeeded!');
+        return $this->sendResponse($trips,'Get trips request succeeded!');
+    }
 }
