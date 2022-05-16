@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\BaseController;
 use App\Models\Trip;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Organizer;
@@ -22,12 +23,32 @@ class TripController extends BaseController
             return $this->sendError('User not found');
         }
 
+
+
         $organizer = $user->organizer;
+
+
         if($organizer == null){
             return $this->sendError('This account not authorized',[],401);
         }
 
-        $trips = Trip::where('organizer_id',$organizer->id)->with('placeTrips')->get();
+        $trips = Trip::where('organizer_id',$organizer->id)
+            ->with(['placeTrips','tripPhotos'=>function($query){
+                $query->select(['id','trip_id']);
+            }])->paginate(10);
+
+        foreach ($trips as $trip){
+
+            echo Carbon::now();
+
+            if(Carbon::now()<$trip['begin_date'])
+            $trip['status'] = 'Upcoming';
+            else if($trip['begin_date']<Carbon::now() &&
+                Carbon::now() < $trip['expire_date'])
+                $trip['status']='Active';
+            else if($trip['expire_date']<Carbon::now())
+                $trip['status'] = 'History';
+        }
 
 
        return $this->sendResponse($trips,"Trip for Organizer received successfully");
