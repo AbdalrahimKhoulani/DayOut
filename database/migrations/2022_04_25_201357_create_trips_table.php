@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('description');
             $table->dateTime('begin_date');
             $table->dateTime('expire_date');
+            $table->dateTime('end_booking');
             $table->float('price');
             $table->softDeletes();
             $table->timestamps();

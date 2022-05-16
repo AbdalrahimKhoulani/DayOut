@@ -9,11 +9,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Trip extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $fillable = ['title','organizer_id','trip_status_id','description','begin_date','expire_date','price'];
+    protected $fillable = ['title','organizer_id','trip_status_id','description','begin_date','expire_date','end_booking','price'];
     protected $dates = ['deleted_at'];
     protected $hidden = ['pivot','deleted_at'];
 
 
+    public function getNextId()
+    {
+        $statement = DB::select('title','trips');
+        return $statement[0]->Auto_increment;
+    }
     public function customerTrips()
     {
         return $this->hasMany(Trip::class);
