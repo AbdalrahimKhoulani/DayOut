@@ -108,6 +108,9 @@ return new class extends Migration {
             $table->foreign('poll_choice_id')->references('id')->on('poll_choices')->cascadeOnDelete()->cascadeOnUpdate();
         });
 
+        Schema::table('trip_photos', function (Blueprint $table) {
+            $table->foreign('trip_id')->references('id')->on('trips')->cascadeOnDelete()->cascadeOnUpdate();;
+        });
 
     }
 
@@ -206,10 +209,9 @@ return new class extends Migration {
         });
 
 
-        Schema::table('customer_poll_choices', function (Blueprint $table) {
-            $table->dropForeign('user_id');
-            $table->dropForeign('poll_id');
-            $table->dropForeign('poll_choice_id');
+        Schema::table('trip_photos', function (Blueprint $table) {
+            $table->dropForeign('trip_id');
+
         });
     }
 };
