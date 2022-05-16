@@ -57,11 +57,17 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 
 Route::prefix('/trip')->controller(TripController::class)->group(function (){
 
+    Route::get('','getTrips');
+
     Route::middleware('auth:api')->group(function (){
 
         Route::post('/create','createTrip');
         Route::post('/create/add/photos','addTripPhotos');
         Route::post('/create/add/places','addPlacesToTrip');
+
+        Route::post('/book','bookTrip');
+        Route::post('/rate','rateTrip');
+        Route::get('/{id}','getTripDetails');
     });
 });
 
