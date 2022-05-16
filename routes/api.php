@@ -68,6 +68,15 @@ Route::prefix('/trip')->controller(TripController::class)->group(function (){
         Route::post('/create/add/places','addPlacesToTrip');
         Route::post('/create/add/types','addTripType');
 
+
+        Route::get('/organizer','organizerTrip');
+        Route::get('/photo/{id}','tripPhoto');
+
+        Route::put('/{id}/edit','editTrip');
+
+        Route::put('/edit/photos','editTripPhotos');
+        Route::put('/edit/places','editTripPlaces');
+
         Route::post('/book','bookTrip');
         Route::post('/rate','rateTrip');
     });
@@ -84,14 +93,4 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
     });
 });
 
-
-Route::prefix('/trip')->controller(TripController::class)->group(function () {
-
-    Route::middleware('auth:api')->group(function () {
-
-
-        Route::get('/organizer','organizerTrip');
-        Route::get('/photo/{id}','tripPhoto');
-    });
-});
 
