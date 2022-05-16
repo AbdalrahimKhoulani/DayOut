@@ -58,6 +58,8 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 Route::prefix('/trip')->controller(TripController::class)->group(function (){
 
     Route::get('','getTrips');
+    Route::get('/{id}','getTripDetails');
+
 
     Route::middleware('auth:api')->group(function (){
 
@@ -67,7 +69,6 @@ Route::prefix('/trip')->controller(TripController::class)->group(function (){
 
         Route::post('/book','bookTrip');
         Route::post('/rate','rateTrip');
-        Route::get('/{id}','getTripDetails');
     });
 });
 
