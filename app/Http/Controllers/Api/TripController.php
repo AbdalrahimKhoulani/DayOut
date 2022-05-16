@@ -17,49 +17,58 @@ use App\Models\TripStatus;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Type\Integer;
+
 class TripController extends BaseController
 {
-    public function organizerTrip(){
+    public function organizerTrip()
+    {
         $user = User::find(Auth::id());
-        if($user==null){
+        if ($user == null) {
+            error_log('User not found');
             return $this->sendError('User not found');
         }
 
         $organizer = $user->organizer;
-        if($organizer == null){
-            return $this->sendError('This account not authorized',[],401);
+        if ($organizer == null) {
+            error_log('This account not authorized');
+            return $this->sendError('This account not authorized', [], 401);
         }
 
-        $trips = Trip::where('organizer_id',$organizer->id)
-            ->with(['placeTrips','tripPhotos'=>function($query){
-                $query->select(['id','trip_id']);
+        $trips = Trip::where('organizer_id', $organizer->id)
+            ->with(['placeTrips', 'tripPhotos' => function ($query) {
+                $query->select(['id', 'trip_id']);
             }])->paginate(10);
 
-        foreach ($trips as $trip){
+        foreach ($trips as $trip) {
 
-            if(Carbon::now()<$trip['begin_date'])
-            $trip['status'] = 'Upcoming';
-            else if($trip['begin_date']<Carbon::now() &&
+            if (Carbon::now() < $trip['begin_date'])
+                $trip['status'] = 'Upcoming';
+            else if ($trip['begin_date'] < Carbon::now() &&
                 Carbon::now() < $trip['expire_date'])
-                $trip['status']='Active';
-            else if($trip['expire_date']<Carbon::now())
+                $trip['status'] = 'Active';
+            else if ($trip['expire_date'] < Carbon::now())
                 $trip['status'] = 'History';
         }
 
-
-       return $this->sendResponse($trips,"Trip for Organizer received successfully");
+        error_log('Trip for Organizer received successfully');
+        return $this->sendResponse($trips, "Trip for Organizer received successfully");
     }
 
 
-    public function tripPhoto($id){
+    public function tripPhoto($id)
+    {
         $tripPhoto = TripPhoto::find($id);
+        if($tripPhoto == null ){
+            error_log('Photo with id : '.$id .' not found');
+            return $this->sendError('Photo with id : '.$id .' not found');
+        }
 
         $img_data = base64_decode($tripPhoto->path);
         $image = imagecreatefromstring($img_data);
 
         $finfo = finfo_open();
-        $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
-        header('Content-Type: image/'.str_replace('image/','',$extension));
+        $extension = finfo_buffer($finfo, $img_data, FILEINFO_MIME_TYPE);
+        header('Content-Type: image/' . str_replace('image/', '', $extension));
         return imagejpeg($image);
     }
 
@@ -67,13 +76,12 @@ class TripController extends BaseController
     {
         error_log('Create trip request!');
         $id = Auth::id();
-        $organizer = Organizer::where('user_id',$id)->first();
-        if($organizer == null)
-        {
+        $organizer = Organizer::where('user_id', $id)->first();
+        if ($organizer == null) {
             error_log('User not authorized!');
-            return $this->sendError('User not authorized!',[],401);
+            return $this->sendError('User not authorized!', [], 401);
         }
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'title' => 'string',
             'description' => 'string',
             'begin_date' => 'required',
@@ -83,8 +91,7 @@ class TripController extends BaseController
             'types' => 'required'
         ]);
 
-        if ($validator->fails())
-        {
+        if ($validator->fails()) {
             error_log($validator->errors());
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
@@ -97,37 +104,123 @@ class TripController extends BaseController
         $trip->expire_date = $request['expire_date'];
         $trip->end_booking = $request['end_booking'];
         $trip->price = $request['price'];
-        $trip_status = TripStatus::where('name','available')->first();
+        $trip_status = TripStatus::where('name', 'available')->first();
         $trip->trip_status_id = $trip_status->id;
         $trip->save();
         $trip->types()->sync($types);
         $trip->load('tripPhotos');
         $trip->load('placeTrips');
         error_log('Add trip succeeded!');
-        return $this->sendResponse($trip,'Succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
     }
-    public function addTripPhotos(Request $request)
+
+
+    public function editTrip(Request $request, $id)
     {
-        error_log('Add trip photos request');
-        $validator = Validator::make($request->all(),[
-           'trip_id' => 'required',
-           'photos' => 'required'
+        $user_id = Auth::id();
+        $organizer = Organizer::where('user_id', $user_id)->first();
+        if ($organizer == null) {
+            error_log('User not authorized!');
+            return $this->sendError('User not authorized!', [], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'string',
+            'description' => 'string',
+            'begin_date' => 'required',
+            'expire_date' => 'required',
+            'end_booking' => 'required',
+            'price' => 'numeric',
+            'types' => 'required'
         ]);
 
-        if ($validator->fails())
-        {
+        if ($validator->fails()) {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+
+        $trip = Trip::find($id);
+
+        if($trip  == null){
+            error_log('Trip not found');
+            return $this->sendError('Trip not found');
+        }
+
+        $trip->title = $request['title'];
+        $trip->organizer()->associate($organizer->id);
+        $types = $request->types;
+        $trip->description = $request['description'];
+        $trip->begin_date = $request['begin_date'];
+        $trip->expire_date = $request['expire_date'];
+        $trip->end_booking = $request['end_booking'];
+        $trip->price = $request['price'];
+        $trip_status = TripStatus::where('name', 'available')->first();
+        $trip->trip_status_id = $trip_status->id;
+        $trip->save();
+
+      $trip->types()->sync($types);
+
+
+        error_log('Add trip succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
+
+    }
+
+
+    public function editTripPhotos(Request $request)
+    {
+        error_log('Edit trip photos request');
+        $validator = Validator::make($request->all(), [
+            'trip_id' => 'required',
+            'photos' => 'required'
+        ]);
+
+        if ($validator->fails()) {
             error_log($validator->errors());
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
         $trip = Trip::find($request['trip_id']);
-        if($trip == null)
-        {
+        if ($trip == null) {
             error_log('Trip not exist!');
             return $this->sendError('Trip not exist!');
         }
-        $photos= $request['photos'];
-        for( $i=0;$i<count($photos);$i++)
-        {
+
+
+        $trip->tripPhotos()->delete();
+
+        $photos = $request['photos'];
+        for ($i = 0; $i < count($photos); $i++) {
+            $tripPhoto = new TripPhoto;
+            $tripPhoto->path = $photos[$i]['image'];
+            $tripPhoto->trip()->associate($trip->id);
+            $tripPhoto->save();
+        }
+//        $trip->tripPhotos()->saveMany($photos);
+
+        error_log('Edit trip photos succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
+    }
+
+
+    public function addTripPhotos(Request $request)
+    {
+        error_log('Add trip photos request');
+        $validator = Validator::make($request->all(), [
+            'trip_id' => 'required',
+            'photos' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $trip = Trip::find($request['trip_id']);
+        if ($trip == null) {
+            error_log('Trip not exist!');
+            return $this->sendError('Trip not exist!');
+        }
+        $photos = $request['photos'];
+        for ($i = 0; $i < count($photos); $i++) {
             $tripPhoto = new TripPhoto;
             $tripPhoto->path = $photos[$i]['image'];
             $tripPhoto->trip()->associate($trip->id);
@@ -136,30 +229,60 @@ class TripController extends BaseController
         $trip->load('types');
         $trip->load('placeTrips');
         error_log('Add trip photos succeeded!');
-        return $this->sendResponse($trip,'Succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
     }
+
     public function addPlacesToTrip(Request $request)
     {
         error_log('Add places to trip request');
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'trip_id' => 'required',
             'places' => 'required'
         ]);
 
-        if ($validator->fails())
-        {
+        if ($validator->fails()) {
             error_log($validator->errors());
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
         $trip = Trip::find($request['trip_id']);
-        if($trip == null)
-        {
+        if ($trip == null) {
             error_log('Trip not exist!');
             return $this->sendError('Trip not exist!');
         }
         $places = $request['places'];
-        for($i=0 ; $i<count($places) ; $i++)
-        {
+        for ($i = 0; $i < count($places); $i++) {
+            $placeTrip = new PlaceTrip;
+            $placeTrip->place_id = $places[$i]['place_id'];
+            $placeTrip->order = $places[$i]['order'];
+            $placeTrip->description = $places[$i]['description'];
+            $placeTrip->trip()->associate($trip->id);
+            $placeTrip->save();
+        }
+        error_log('Add places to trip succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
+    }
+
+    public function editTripPlaces(Request $request)
+    {
+        error_log('Edit places to trip request');
+        $validator = Validator::make($request->all(), [
+            'trip_id' => 'required',
+            'places' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $trip = Trip::find($request['trip_id']);
+        if ($trip == null) {
+            error_log('Trip not exist!');
+            return $this->sendError('Trip not exist!');
+        }
+
+        $trip->placeTrips()->delete();
+        $places = $request['places'];
+        for ($i = 0; $i < count($places); $i++) {
             $placeTrip = new PlaceTrip;
             $placeTrip->place_id = $places[$i]['place_id'];
             $placeTrip->order = $places[$i]['order'];
@@ -170,7 +293,7 @@ class TripController extends BaseController
         $trip->load('tripPhotos');
         $trip->load('types');
         error_log('Add places to trip succeeded!');
-        return $this->sendResponse($trip,'Succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
     }
     public function getTripDetails($id)
     {
