@@ -77,12 +77,13 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
 });
 
 
-Route::prefix('/organizer')->controller(TripController::class)->group(function () {
+Route::prefix('/trip')->controller(TripController::class)->group(function () {
 
     Route::middleware('auth:api')->group(function () {
 
 
-        Route::get('/trip','organizerTrip');
+        Route::get('/organizer','organizerTrip');
+        Route::get('/photo/{id}','tripPhoto');
     });
 });
 
