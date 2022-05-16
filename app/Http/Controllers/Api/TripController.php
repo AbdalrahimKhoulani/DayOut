@@ -225,7 +225,9 @@ class TripController extends BaseController
             $tripPhoto->trip()->associate($trip->id);
             $tripPhoto->save();
         }
-        $trip->load('tripPhotos');
+        $trip->load(['tripPhotos' => function ($query){
+            $query->select(['id','trip_id']);
+        }]);
         $trip->load('placeTrips');
         $trip->load('types');
         error_log('Add trip photos succeeded!');
@@ -290,7 +292,9 @@ class TripController extends BaseController
             $placeTrip->trip()->associate($trip->id);
             $placeTrip->save();
         }
-        $trip->load('tripPhotos');
+        $trip->load(['tripPhotos' => function ($query){
+            $query->select(['id','trip_id']);
+        }]);
         $trip->load('placeTrips');
         $trip->load('types');
         error_log('Add places to trip succeeded!');
@@ -317,7 +321,9 @@ class TripController extends BaseController
         }
         $types = $request->types;
         $trip->types()->sync($types);
-        $trip->load('tripPhotos');
+        $trip->load(['tripPhotos' => function ($query){
+            $query->select(['id','trip_id']);
+        }]);
         $trip->load('placeTrips');
         $trip->load('types');
         error_log('Add places to trip succeeded!');
