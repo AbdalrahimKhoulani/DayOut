@@ -49,8 +49,6 @@ class TripController extends BaseController
             'expire_date' => 'required',
             'end_booking' => 'required',
             'price' => 'numeric',
-            'photos' => 'required',
-            'places' => 'required',
             'types' => 'required'
         ]);
 
@@ -70,13 +68,38 @@ class TripController extends BaseController
         $trip->expire_date = $request['expire_date'];
         $trip->end_booking = $request['end_booking'];
         $trip->price = $request['price'];
-        $trip_status = TripStatus::where('name','available');
+        $trip_status = TripStatus::where('name','available')->first();
         $trip->trip_status_id = $trip_status->id;
         $trip->save();
         for($i=0;$i<count($types);$i++)
         {
             $trip->types()->attach($types[$i]['type_id']);
         }
+
+
+        error_log('Add trip succeeded!');
+        return $this->sendResponse($trip,'Succeeded!');
+    }
+    public function addTripPhotos(Request $request)
+    {
+        error_log('Add trip photos request');
+        $validator = Validator::make($request->all(),[
+           'trip_id' => 'required',
+           'photos' => 'required'
+        ]);
+
+        if ($validator->fails())
+        {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $trip = Trip::find($request['trip_id']);
+        if($trip == null)
+        {
+            error_log('Trip not exist!');
+            return $this->sendError('Trip not exist!');
+        }
+        $photos= $request['photos'];
         for( $i=0;$i<count($photos);$i++)
         {
             $tripPhoto = new TripPhoto;
@@ -84,6 +107,29 @@ class TripController extends BaseController
             $tripPhoto->trip()->associate($trip->id);
             $tripPhoto->save();
         }
+        error_log('Add trip photos succeeded!');
+        return $this->sendResponse($trip,'Succeeded!');
+    }
+    public function addPlacesToTrip(Request $request)
+    {
+        error_log('Add places to trip request');
+        $validator = Validator::make($request->all(),[
+            'trip_id' => 'required',
+            'places' => 'required'
+        ]);
+
+        if ($validator->fails())
+        {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $trip = Trip::find($request['trip_id']);
+        if($trip == null)
+        {
+            error_log('Trip not exist!');
+            return $this->sendError('Trip not exist!');
+        }
+        $places = $request['places'];
         for($i=0 ; $i<count($places) ; $i++)
         {
             $placeTrip = new PlaceTrip;
@@ -93,7 +139,7 @@ class TripController extends BaseController
             $placeTrip->trip()->associate($trip->id);
             $placeTrip->save();
         }
-
+        error_log('Add places to trip succeeded!');
         return $this->sendResponse($trip,'Succeeded!');
     }
 }
