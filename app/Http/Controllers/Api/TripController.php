@@ -98,7 +98,6 @@ class TripController extends BaseController
         $trip = new Trip;
         $trip->title = $request['title'];
         $trip->organizer()->associate($organizer->id);
-        $types = $request->types;
         $trip->description = $request['description'];
         $trip->begin_date = $request['begin_date'];
         $trip->expire_date = $request['expire_date'];
@@ -107,9 +106,9 @@ class TripController extends BaseController
         $trip_status = TripStatus::where('name', 'available')->first();
         $trip->trip_status_id = $trip_status->id;
         $trip->save();
-        $trip->types()->sync($types);
         $trip->load('tripPhotos');
         $trip->load('placeTrips');
+        $trip->load('types');
         error_log('Add trip succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
     }
@@ -226,8 +225,9 @@ class TripController extends BaseController
             $tripPhoto->trip()->associate($trip->id);
             $tripPhoto->save();
         }
-        $trip->load('types');
+        $trip->load('tripPhotos');
         $trip->load('placeTrips');
+        $trip->load('types');
         error_log('Add trip photos succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
     }
@@ -291,6 +291,34 @@ class TripController extends BaseController
             $placeTrip->save();
         }
         $trip->load('tripPhotos');
+        $trip->load('placeTrips');
+        $trip->load('types');
+        error_log('Add places to trip succeeded!');
+        return $this->sendResponse($trip,'Succeeded!');
+    }
+    public function addTripType(Request $request)
+    {
+        error_log('Add trip type request');
+        $validator = Validator::make($request->all(),[
+            'trip_id' => 'required',
+            'types' => 'required'
+        ]);
+
+        if ($validator->fails())
+        {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $trip = Trip::find($request['trip_id']);
+        if($trip == null)
+        {
+            error_log('Trip not exist!');
+            return $this->sendError('Trip not exist!');
+        }
+        $types = $request->types;
+        $trip->types()->sync($types);
+        $trip->load('tripPhotos');
+        $trip->load('placeTrips');
         $trip->load('types');
         error_log('Add places to trip succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
@@ -385,7 +413,7 @@ class TripController extends BaseController
         error_log('Get trips request!');
         $trips = Trip::with(['placeTrips','tripPhotos'=>function($query){
                 $query->select(['id','trip_id']);
-            }])->paginate(10);
+            }])->orderByDesc('created_at')->paginate(10);
 
         foreach ($trips as $trip){
 
@@ -401,4 +429,5 @@ class TripController extends BaseController
         error_log('Get trips request succeeded!');
         return $this->sendResponse($trips,'Get trips request succeeded!');
     }
+
 }
