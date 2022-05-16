@@ -66,6 +66,7 @@ Route::prefix('/trip')->controller(TripController::class)->group(function (){
         Route::post('/create','createTrip');
         Route::post('/create/add/photos','addTripPhotos');
         Route::post('/create/add/places','addPlacesToTrip');
+        Route::post('/create/add/types','addTripType');
 
         Route::post('/book','bookTrip');
         Route::post('/rate','rateTrip');
