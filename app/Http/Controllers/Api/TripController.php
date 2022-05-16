@@ -39,8 +39,6 @@ class TripController extends BaseController
 
         foreach ($trips as $trip){
 
-            echo Carbon::now();
-
             if(Carbon::now()<$trip['begin_date'])
             $trip['status'] = 'Upcoming';
             else if($trip['begin_date']<Carbon::now() &&
@@ -53,6 +51,20 @@ class TripController extends BaseController
 
        return $this->sendResponse($trips,"Trip for Organizer received successfully");
     }
+
+
+    public function tripPhoto($id){
+        $tripPhoto = TripPhoto::find($id);
+
+        $img_data = base64_decode($tripPhoto->path);
+        $image = imagecreatefromstring($img_data);
+
+        $finfo = finfo_open();
+        $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
+        header('Content-Type: image/'.str_replace('image/','',$extension));
+        return imagejpeg($image);
+    }
+
     public function createTrip(Request $request)
     {
         error_log('Create trip request!');
@@ -163,4 +175,6 @@ class TripController extends BaseController
         error_log('Add places to trip succeeded!');
         return $this->sendResponse($trip,'Succeeded!');
     }
+
+
 }
