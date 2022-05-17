@@ -223,7 +223,7 @@ class TripController extends BaseController
         $trip->trip_status_id = $trip_status->id;
         $trip->save();
 
-      $trip->types()->sync($types);
+
 
 
         error_log('Add trip succeeded!');
@@ -231,6 +231,27 @@ class TripController extends BaseController
 
     }
 
+
+    public function editTripTypes(Request $request,$id){
+
+        $validator = Validator::make($request->all(),[
+            'types'=>'required'
+        ]);
+        if($validator->fails()){
+            return $this->sendError('Edit trip types failed',$validator->errors(),422);
+        }
+        $trip = Trip::find($id);
+        if($trip==null){
+            return $this->sendError('Edit trip types failed');
+        }
+
+        $types = $request['types'];
+
+        $trip->types()->sync($types);
+        $trip['types']=$trip->types;
+
+        return $this->sendResponse($trip, 'Succeeded!');
+    }
 
     public function editTripPhotos(Request $request)
     {

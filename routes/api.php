@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\PlaceController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\OrganizerController;
@@ -43,7 +44,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 
     Route::post('/promotion/request', 'requestPromotion');
 
-   // Route::post('/confirm', 'confirmAccount');
+    // Route::post('/confirm', 'confirmAccount');
 
     Route::get('/profile/{id}/photo', 'profilePhoto');
     Route::get('/profile/customer/{id}', 'profileCustomer');
@@ -67,7 +68,7 @@ Route::prefix('/trip')->controller(TripController::class)->group(function (){
 
 
 
-    Route::middleware('auth:api')->group(function (){
+    Route::middleware('auth:api')->group(function () {
 
         Route::post('/create','createTrip');
         Route::post('/create/add/photos','addTripPhotos');
@@ -81,13 +82,14 @@ Route::prefix('/trip')->controller(TripController::class)->group(function (){
 
         Route::get('/organizer','organizerTrip');
 
-        Route::put('/{id}/edit','editTrip');
+        Route::put('/{id}/edit', 'editTrip');
 
-        Route::put('/edit/photos','editTripPhotos');
-        Route::put('/edit/places','editTripPlaces');
+        Route::put('/edit/photos', 'editTripPhotos');
+        Route::put('/edit/places', 'editTripPlaces');
+        Route::put('/{id}/edit/types', 'editTripTypes');
 
-        Route::post('/book','bookTrip');
-        Route::post('/rate','rateTrip');
+        Route::post('/book', 'bookTrip');
+        Route::post('/rate', 'rateTrip');
     });
 });
 
@@ -102,4 +104,10 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
     });
 });
 
+
+Route::prefix('/search')->controller(SearchController::class)->group(function(){
+    Route::middleware('auth:api')->group(function(){
+        Route::post('/trip', 'search');
+    });
+});
 
