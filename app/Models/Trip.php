@@ -21,7 +21,7 @@ class Trip extends Model
     }
     public function customerTrips()
     {
-        return $this->hasMany(Trip::class);
+        return $this->hasMany(CustomerTrip::class);
     }
     public function  placeTrips()
     {
