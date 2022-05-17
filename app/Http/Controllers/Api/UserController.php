@@ -47,7 +47,7 @@ class UserController extends BaseController
             'last_name' => 'required|regex:/^[\pL\s\-]+$/u',
             'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
             'password' => 'required',
-            'photo' => 'image',
+            //'photo' => 'image',
             'gender' => 'required|in:Male,Female',
             'mobile_token' => 'string'
         ]);
