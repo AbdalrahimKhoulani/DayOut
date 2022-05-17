@@ -58,7 +58,13 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 Route::prefix('/trip')->controller(TripController::class)->group(function (){
 
     Route::get('','getTrips');
-    Route::get('/{id}','getTripDetails');
+    Route::get('/{id}/details','getTripDetails');
+    Route::get('/types','getTypes');
+
+    Route::get('/photo/{id}','tripPhoto');
+
+
+
 
 
     Route::middleware('auth:api')->group(function (){
@@ -68,9 +74,12 @@ Route::prefix('/trip')->controller(TripController::class)->group(function (){
         Route::post('/create/add/places','addPlacesToTrip');
         Route::post('/create/add/types','addTripType');
 
+        Route::get('/active','getActiveTrips');
+        Route::get('/upcoming','getUpcomingTrips');
+        Route::get('/history','getHistoryTrips');
+
 
         Route::get('/organizer','organizerTrip');
-        Route::get('/photo/{id}','tripPhoto');
 
         Route::put('/{id}/edit','editTrip');
 

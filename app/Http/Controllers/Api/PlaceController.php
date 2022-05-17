@@ -17,7 +17,11 @@ class PlaceController extends BaseController
 {
     public function index()
     {
-        $places = Place::with('photos')->get();
+        error_log('Get places request!');
+        $places = Place::with(['photos' => function($query){
+            $query->select(['id','place_id']);
+        }])->paginate(10);
+        error_log('Get places request succeeded!');
         return $this->sendResponse($places, 'Succeeded');
     }
 
