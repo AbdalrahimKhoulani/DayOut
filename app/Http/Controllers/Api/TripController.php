@@ -19,6 +19,8 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Type\Integer;
 
+//TODO: edit profile,create trip
+
 class TripController extends BaseController
 {
     public function organizerTrip()
@@ -59,13 +61,22 @@ class TripController extends BaseController
         $id = Auth::id();
         $organizer = Organizer::where('user_id',$id)->first();
         if($organizer != null)
-        { $trips = Trip::where('organizer_id',$organizer->id)->where('begin_date','<',Carbon::now())->where('expire_date','<',Carbon::now())->with(['placeTrips', 'tripPhotos' => function ($query) {
+        {
+            $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+                ->where('organizer_id',$organizer->id)->where('begin_date','<=',Carbon::now())
+                ->withCount('customerTrips')
+            ->where('expire_date','>',Carbon::now())
+            ->with(['placeTrips' => function($query){
+                $query->with('place');
+            } ,'tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
         }])->get();}
         else{
-            $trips = Trip::with(['customerTrips' => function($query) use ($id) {
+            $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+                ->with(['customerTrips' => function($query) use ($id) {
                 $query->where('user_id',$id);
-            }])->where('begin_date','<',Carbon::now())->where('expire_date','<',Carbon::now())
+            }])->where('begin_date','<=',Carbon::now())
+                ->where('expire_date','>',Carbon::now())
                 ->with(['placeTrips' => function($query){
                     $query->with('place');
                 }, 'tripPhotos' => function ($query) {
@@ -85,14 +96,22 @@ class TripController extends BaseController
         if($organizer != null)
         {
 
-            $trips = Trip::where('organizer_id',$organizer->id)->where('begin_date','<',Carbon::now())->with(['placeTrips', 'tripPhotos' => function ($query) {
+            $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+                ->where('organizer_id',$organizer->id)
+                ->where('begin_date','>',Carbon::now())->
+                    withCount('customerTrips')->
+            with(['placeTrips'=> function($query){
+                $query->with('place');
+            }, 'tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
         }])->get();}
         else{
 
-            $trips = Trip::with(['customerTrips' => function($query) use ($id) {
+            $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+                ->withCount('customerTrips')
+                ->with(['customerTrips' => function($query) use ($id) {
                 $query->where('customer_id',$id);
-            }])->where('begin_date','<',Carbon::now())
+            }])->where('begin_date','>',Carbon::now())
                 ->with(['placeTrips' => function($query) {
                     $query->with('place');
             }, 'tripPhotos' => function ($query) {
@@ -109,11 +128,17 @@ class TripController extends BaseController
         $id = Auth::id();
         $organizer = Organizer::where('user_id',$id)->first();
         if($organizer != null)
-        { $trips = Trip::where('organizer_id',$organizer->id)->where('expire_date','<',Carbon::now())->with(['placeTrips', 'tripPhotos' => function ($query) {
+        { $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])->withCount('customerTrips')->
+        where('organizer_id',$organizer->id)->
+        where('expire_date','<',Carbon::now())->
+        with(['placeTrips' => function($query){
+            $query->with('place');
+        }, 'tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
         }])->get();}
         else{
-            $trips = Trip::with(['customerTrips' => function($query) use ($id) {
+            $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])->withCount('customerTrips')->
+            with(['customerTrips' => function($query) use ($id) {
                 $query->where('user_id',$id);
             }])->where('expire_date','<',Carbon::now())
                 ->with(['placeTrips' => function ($query){
@@ -425,7 +450,9 @@ class TripController extends BaseController
     {
         error_log('Get trip details!');
         $trip = Trip::find($id)
-            ->with(['placeTrips','tripPhotos'=>function($query){
+            ->with(['types','customerTrips'=>function($query){
+                return $query->with('user');
+            },'placeTrips','tripPhotos'=>function($query){
                 $query->select(['id','trip_id']);
             }])->first();
         if($trip == null)
@@ -433,7 +460,7 @@ class TripController extends BaseController
             error_log('Trip not found!');
             return $this->sendError('Trip not found!');
         }
-        error_log('Get trip details!');
+        error_log('Get trip details succeeded!');
         return $this->sendResponse($trip,'Succeeded!');
     }
     public function bookTrip(Request $request)
@@ -509,20 +536,11 @@ class TripController extends BaseController
     public function getTrips()
     {
         error_log('Get trips request!');
-        $trips = Trip::with(['placeTrips','tripPhotos'=>function($query){
+        $trips = Trip::with(['placeTrips','types','tripPhotos'=>function($query){
                 $query->select(['id','trip_id']);
-            }])->orderByDesc('created_at')->paginate(10);
+            }])->where('begin_date','>',Carbon::now())->orderByDesc('created_at')->paginate(10);
 
-        foreach ($trips as $trip){
 
-            if(Carbon::now()<$trip['begin_date'])
-                $trip['status'] = 'Upcoming';
-            else if($trip['begin_date']<Carbon::now() &&
-                Carbon::now() < $trip['expire_date'])
-                $trip['status']='Active';
-            else if($trip['expire_date']<Carbon::now())
-                $trip['status'] = 'History';
-        }
 
         error_log('Get trips request succeeded!');
         return $this->sendResponse($trips,'Get trips request succeeded!');

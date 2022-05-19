@@ -73,21 +73,22 @@ class PlaceController extends Controller
     {
         /***    php artisan storage:link     ***/
         $place_images = [];
+       // dd($photos[0]);
         for ($i = 0; $i < count($photos); $i++) {
-//            $date = Carbon::now()->toDateTimeLocalString();
-//            Storage::disk('local')
-//                ->put(
-//                    'public/places/' . $place->name . $date . '.' . $photos[$i]->extension(),
-//                    file_get_contents($photos[$i]));
-//            $place_images[$i] = PlacePhotos::create([
-//                'place_id' => $place->id,
-//                'path' => Storage::url('public/places/'.$place->name . $date . '.' . $photos[$i]->extension())
-//            ]);
-
+            $date = Carbon::now()->toDateTimeLocalString();
+            Storage::disk('local')
+                ->put(
+                    'public/places/' . $place->name . $date . '.' . $photos[$i]->extension(),
+                    file_get_contents($photos[$i]));
             $place_images[$i] = PlacePhotos::create([
                 'place_id' => $place->id,
-                'path' => base64_encode(file_get_contents($photos[$i]))
+                'path' => Storage::url('public/places/'.$place->name . $date . '.' . $photos[$i]->extension())
             ]);
+
+//            $place_images[$i] = PlacePhotos::create([
+//                'place_id' => $place->id,
+//                'path' => base64_encode(file_get_contents($photos[$i]))
+//            ]);
         }
         return $place_images;
     }
