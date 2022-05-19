@@ -66,18 +66,19 @@ class TripController extends BaseController
                 ->where('organizer_id',$organizer->id)->where('begin_date','<=',Carbon::now())
                 ->withCount('customerTrips')
             ->where('expire_date','>',Carbon::now())
-            ->with(['placeTrips' => function($query){
+            ->with(['types','placeTrips' => function($query){
                 $query->with('place');
             } ,'tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
         }])->get();}
         else{
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+                ->withCount('customerTrips')
                 ->with(['customerTrips' => function($query) use ($id) {
                 $query->where('user_id',$id);
             }])->where('begin_date','<=',Carbon::now())
                 ->where('expire_date','>',Carbon::now())
-                ->with(['placeTrips' => function($query){
+                ->with(['types','placeTrips' => function($query){
                     $query->with('place');
                 }, 'tripPhotos' => function ($query) {
                 $query->select(['id', 'trip_id']);
@@ -100,7 +101,7 @@ class TripController extends BaseController
                 ->where('organizer_id',$organizer->id)
                 ->where('begin_date','>',Carbon::now())->
                     withCount('customerTrips')->
-            with(['placeTrips'=> function($query){
+            with(['types','placeTrips'=> function($query){
                 $query->with('place');
             }, 'tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
@@ -109,7 +110,7 @@ class TripController extends BaseController
 
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
                 ->withCount('customerTrips')
-                ->with(['customerTrips' => function($query) use ($id) {
+                ->with(['types','customerTrips' => function($query) use ($id) {
                 $query->where('customer_id',$id);
             }])->where('begin_date','>',Carbon::now())
                 ->with(['placeTrips' => function($query) {
@@ -128,17 +129,18 @@ class TripController extends BaseController
         $id = Auth::id();
         $organizer = Organizer::where('user_id',$id)->first();
         if($organizer != null)
-        { $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])->withCount('customerTrips')->
+        { $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+            ->withCount('customerTrips')->
         where('organizer_id',$organizer->id)->
         where('expire_date','<',Carbon::now())->
-        with(['placeTrips' => function($query){
+        with(['types','placeTrips' => function($query){
             $query->with('place');
         }, 'tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
         }])->get();}
         else{
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])->withCount('customerTrips')->
-            with(['customerTrips' => function($query) use ($id) {
+            with(['types','customerTrips' => function($query) use ($id) {
                 $query->where('user_id',$id);
             }])->where('expire_date','<',Carbon::now())
                 ->with(['placeTrips' => function ($query){
