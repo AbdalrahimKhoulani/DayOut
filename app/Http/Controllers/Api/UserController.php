@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\ConfirmationCode;
+use App\Models\PlacePhotos;
 use App\Models\PromotionRequest;
 use App\Models\PromotionStatus;
 use App\Models\Role;
@@ -30,7 +31,10 @@ class UserController extends BaseController
             $success['role'] = $user->roles;
             $success['token'] = $user->createToken($user->phone_number )->accessToken;
 
+            $user = Auth::user();
+            $user->mobile_token = $request['mobile_token'];
             error_log('Login successful!');
+
             return $this->sendResponse($success, 'Login successful!');
         } else {
             error_log('Login information are not correct!');
@@ -126,7 +130,23 @@ class UserController extends BaseController
         $promotionRequest = new PromotionRequest();
         $promotionRequest->status_id = $promotionStatus->id;
         $promotionRequest->user_id = $user->id;
-        $promotionRequest->credential_photo = $request['credential_photo'];
+
+        $photo = $request['credential_photo'];
+
+        $img_data = $photo;
+        $image = base64_decode($img_data);
+        $filename = uniqid();
+        //$extension = '.png';
+        $file = finfo_open();
+        $result = finfo_buffer($file, $image, FILEINFO_MIME_TYPE);
+        $extension = str_replace('image/', '.', $result);
+
+
+        $path =  Storage::put(
+            'public/credentials/'.$filename.$extension,$photo) ;
+
+
+        $promotionRequest->credential_photo = $path;
         if($request->has('description'))
             $promotionRequest->description = $request['description'];
         $promotionRequest->save();

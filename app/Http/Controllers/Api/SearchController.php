@@ -9,7 +9,7 @@ use App\Models\Trip;
 class SearchController extends BaseController
 {
     public function search(Request $request){
-        $trips = Trip::with('types')->select(['trips.id','trips.title']);
+        $trips = Trip::with('types');
 
 
         if($request->has('title')){
