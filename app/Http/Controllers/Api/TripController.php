@@ -16,6 +16,7 @@ use App\Models\PlaceTrip;
 use App\Models\TripPhoto;
 use App\Models\TripStatus;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Type\Integer;
 
@@ -55,12 +56,12 @@ class TripController extends BaseController
         return $this->sendResponse($types,'Succeeded!');
     }
 
-    public function getActiveTrips()
+    public function getActiveTrips($type)
     {
         error_log('Get active trips request!');
         $id = Auth::id();
         $organizer = Organizer::where('user_id',$id)->first();
-        if($organizer != null)
+        if($type == "organizer")
         {
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
                 ->where('organizer_id',$organizer->id)->where('begin_date','<=',Carbon::now())
@@ -73,10 +74,11 @@ class TripController extends BaseController
         }])->get();}
         else{
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+                ->whereHas('customerTrips',function ( $query) use ($id) {
+                    $query->where('customer_id',$id);
+                },'!=',0)
                 ->withCount('customerTrips')
-                ->with(['customerTrips' => function($query) use ($id) {
-                $query->where('user_id',$id);
-            }])->where('begin_date','<=',Carbon::now())
+                ->where('begin_date','<=',Carbon::now())
                 ->where('expire_date','>',Carbon::now())
                 ->with(['types','placeTrips' => function($query){
                     $query->with('place');
@@ -89,14 +91,13 @@ class TripController extends BaseController
         error_log('Get active trips request succeeded!');
         return $this->sendResponse($trips,'Succeeded!');
     }
-    public function getUpcomingTrips()
+    public function getUpcomingTrips($type)
     {
         error_log('Get upcoming trips request!');
         $id = Auth::id();
-        $organizer = Organizer::where('user_id',$id)->first();
-        if($organizer != null)
+        if($type == "organizer")
         {
-
+            $organizer = Organizer::where('user_id',$id)->first();
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
                 ->where('organizer_id',$organizer->id)
                 ->where('begin_date','>',Carbon::now())->
@@ -109,10 +110,11 @@ class TripController extends BaseController
         else{
 
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+                ->whereHas('customerTrips',function ( $query) use ($id) {
+                    $query->where('customer_id',$id);
+                },'!=',0)
                 ->withCount('customerTrips')
-                ->with(['types','customerTrips' => function($query) use ($id) {
-                $query->where('customer_id',$id);
-            }])->where('begin_date','>',Carbon::now())
+                ->with('types')->where('begin_date','>',Carbon::now())
                 ->with(['placeTrips' => function($query) {
                     $query->with('place');
             }, 'tripPhotos' => function ($query) {
@@ -123,13 +125,15 @@ class TripController extends BaseController
         error_log('Get upcoming trips request succeeded!');
         return $this->sendResponse($trips,'Succeeded!');
     }
-    public function getHistoryTrips()
+    public function getHistoryTrips($type)
     {
         error_log('Get history trips request!');
         $id = Auth::id();
-        $organizer = Organizer::where('user_id',$id)->first();
-        if($organizer != null)
-        { $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+
+        if($type == "organizer")
+        {
+            $organizer = Organizer::where('user_id',$id)->first();
+            $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
             ->withCount('customerTrips')->
         where('organizer_id',$organizer->id)->
         where('expire_date','<',Carbon::now())->
@@ -139,10 +143,12 @@ class TripController extends BaseController
             $query->select(['id', 'trip_id']);
         }])->get();}
         else{
-            $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])->withCount('customerTrips')->
-            with(['types','customerTrips' => function($query) use ($id) {
-                $query->where('user_id',$id);
-            }])->where('expire_date','<',Carbon::now())
+            $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])->
+            withCount('customerTrips')->
+                whereHas('customerTrips',function ( $query) use ($id) {
+                    $query->where('customer_id',$id);
+            },'!=',0)->
+            with('types')->where('expire_date','<',Carbon::now())
                 ->with(['placeTrips' => function ($query){
                     $query->with('place');
                 }, 'tripPhotos' => function ($query) {
@@ -340,7 +346,7 @@ class TripController extends BaseController
         $photos = $request['photos'];
         for ($i = 0; $i < count($photos); $i++) {
             $tripPhoto = new TripPhoto;
-            $tripPhoto->path = $photos[$i]['image'];
+            $tripPhoto->path = $this->storeImage($photos[$i]['image']);
             $tripPhoto->trip()->associate($trip->id);
             $tripPhoto->save();
         }
@@ -516,7 +522,7 @@ class TripController extends BaseController
         $id = Auth::id();
         $validator = Validator::make($request->all(),[
             'trip_id' => 'required',
-            'rate' => 'required|integer|between:1,5'
+            'rate' => 'required'
         ]);
         if ($validator->fails())
         {
@@ -546,6 +552,23 @@ class TripController extends BaseController
 
         error_log('Get trips request succeeded!');
         return $this->sendResponse($trips,'Get trips request succeeded!');
+    }
+
+    private function storeImage( $photo)
+    {
+        $image = base64_decode($photo);
+        $filename = uniqid();
+        $extention = '.png';
+        $f = finfo_open();
+        $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
+        if($result == 'image/jpeg')
+            $extention = '.jpeg';
+        elseif ($result == 'image/webp')
+            $extention = '.webp';
+        elseif($result == 'image/x-ms-bmp')
+            $extention = '.bmp';
+        Storage::put('public/trips/'.$filename . $extention, $image);
+        return Storage::url('public/trips/' .$filename . $extention);
     }
 
 }

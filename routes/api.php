@@ -75,9 +75,9 @@ Route::prefix('/trip')->controller(TripController::class)->group(function (){
         Route::post('/create/add/places','addPlacesToTrip');
         Route::post('/create/add/types','addTripType');
 
-        Route::get('/active','getActiveTrips');
-        Route::get('/upcoming','getUpcomingTrips');
-        Route::get('/history','getHistoryTrips');
+        Route::get('/active/{type}','getActiveTrips');
+        Route::get('/upcoming/{type}','getUpcomingTrips');
+        Route::get('/history/{type}','getHistoryTrips');
 
 
         Route::get('/organizer','organizerTrip');

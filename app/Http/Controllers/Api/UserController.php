@@ -10,6 +10,7 @@ use App\Models\User;
 
 
 use App\Models\UserRole;
+use Intervention\Image\Facades\Image;
 use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -231,7 +232,8 @@ class UserController extends BaseController
     public function profileCustomer($id)
     {
         error_log('Customer profile request');
-        $user = User::select(['id','first_name','last_name','email','phone_number','gender'])->withCount(['customerTrip', 'organizerFollow'])->find($id);
+        $user = User::select(['id','first_name','last_name','email','phone_number','gender'])
+            ->withCount(['customerTrip', 'organizerFollow'])->find($id);
         if ($user != null) {
             error_log('Customer profile request succeeded!');
             return $this->sendResponse($user, 'Succeeded!');
@@ -273,24 +275,13 @@ class UserController extends BaseController
                 $user['first_name'] = $request['first_name'];
             if ($request->has('last_name'))
                 $user['last_name'] = $request['last_name'];
-            if ($request->has('photo')) {
-                if ($request->has('first_name') && $request->has('last_name'))
-                    $user['photo'] = $this->storeProfileImage($request['first_name'], $request['last_name'], $request['photo']);
-                elseif ($request->has('first_name'))
-                    $user['photo'] = $this->storeProfileImage($request['first_name'], $user['last_name'], $request['photo']);
-                elseif ($request->has('last_name'))
-                    $user['photo'] = $this->storeProfileImage($user['first_name'], $request['last_name'], $request['photo']);
-                else
-                    $user['photo'] = $this->storeProfileImage($user['first_name'], $user['last_name'], $request['photo']);
-
-
-            }
+            if ($request->has('photo'))
+                $user['photo']=$this->storeProfileImage($request['photo']);
             if($request->has('gender'))
                 $user['gender'] = $request['gender'];
             if($request->has('email'))
                 $user['email'] = $request['email'];
             $user->save();
-            $user->makeHidden('photo');
             error_log('Customer profile edit request succeeded!');
             return $this->sendResponse($user, 'Edit succeeded!');
         }
@@ -299,9 +290,10 @@ class UserController extends BaseController
 
     }
 
-    private function storeProfileImage($firstname, $lastname, $photo)
+    private function storeProfileImage( $photo)
     {
         $image = base64_decode($photo);
+        $filename = uniqid();
         $extention = '.png';
         $f = finfo_open();
         $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
@@ -311,19 +303,21 @@ class UserController extends BaseController
             $extention = '.webp';
         elseif($result == 'image/x-ms-bmp')
             $extention = '.bmp';
-        Storage::disk('local')->put('public/users/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention, $image);
-        return Storage::url('users/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention);
+        Storage::disk('users')->put($filename . $extention, $image);
+        return Storage::disk('users')->url('users/'.$filename . $extention);
     }
 
     public function profilePhoto($id){
         $user = User::find($id);
 
-        $img_data = base64_decode($user->photo);
-        $image = imagecreatefromstring($img_data);
+        //$img_data = base64_decode($user->photo);
+       // $image = imagecreatefromstring($img_data);
 
-        $finfo = finfo_open();
-        $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
-        header('Content-Type: image/'.str_replace('image/','',$extension));
-        return imagejpeg($image);
+       // $finfo = finfo_open();
+       // $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
+      //  header('Content-Type: image/'.str_replace('image/','',$extension));
+
+        return $this->sendResponse($user->photo,'Succeeded');
     }
+
 }
