@@ -15,9 +15,11 @@ class OrganizerController extends BaseController
     public function organizerProfile($id)
     {
         error_log('Organizer profile request');
-            $organizer = Organizer::select(['id', 'user_id','bio'])->where('user_id', $id)->with(['user' => function ($query) {
-                $query->select(['id', 'first_name', 'last_name', 'email', 'phone_number', 'gender']);
-            }])->withCount('followers', 'trips')->first();
+            $organizer = Organizer::select(['id', 'user_id','bio'])->where('user_id', $id)->
+            with(['user' => function ($query) {
+                $query->select(['id', 'first_name', 'last_name', 'email', 'phone_number', 'gender','photo']);
+            }])->
+            withCount('followers', 'trips')->first();
             if ($organizer != null) {
                 error_log('Organizer profile request succeeded');
                 return $this->sendResponse($organizer, 'Succeeded!');

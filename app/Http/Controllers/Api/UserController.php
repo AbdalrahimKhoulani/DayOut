@@ -232,8 +232,8 @@ class UserController extends BaseController
     public function profileCustomer($id)
     {
         error_log('Customer profile request');
-        $user = User::select(['id','first_name','last_name','email','phone_number','gender'])
-            ->withCount(['customerTrip', 'organizerFollow'])->find($id);
+        $user = User::where('id',$id)
+            ->withCount(['customerTrip', 'organizerFollow'])->first();
         if ($user != null) {
             error_log('Customer profile request succeeded!');
             return $this->sendResponse($user, 'Succeeded!');
