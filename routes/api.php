@@ -100,6 +100,7 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/edit', 'editOrganizerProfile');
+        Route::delete('/profile/delete/photo','deleteProfileImage');
 
     });
 });

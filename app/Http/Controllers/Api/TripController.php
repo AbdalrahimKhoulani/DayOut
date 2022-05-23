@@ -69,9 +69,7 @@ class TripController extends BaseController
             ->where('expire_date','>',Carbon::now())
             ->with(['types','placeTrips' => function($query){
                 $query->with('place');
-            } ,'tripPhotos' => function ($query) {
-            $query->select(['id', 'trip_id']);
-        }])->get();}
+            } ,'tripPhotos'])->get();}
         else{
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
                 ->whereHas('customerTrips',function ( $query) use ($id) {
@@ -82,9 +80,7 @@ class TripController extends BaseController
                 ->where('expire_date','>',Carbon::now())
                 ->with(['types','placeTrips' => function($query){
                     $query->with('place');
-                }, 'tripPhotos' => function ($query) {
-                $query->select(['id', 'trip_id']);
-            }])->get();
+                }, 'tripPhotos'])->get();
         }
 
 
@@ -104,9 +100,7 @@ class TripController extends BaseController
                     withCount('customerTrips')->
             with(['types','placeTrips'=> function($query){
                 $query->with('place');
-            }, 'tripPhotos' => function ($query) {
-            $query->select(['id', 'trip_id']);
-        }])->get();}
+            }, 'tripPhotos' ])->get();}
         else{
 
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
@@ -117,9 +111,7 @@ class TripController extends BaseController
                 ->with('types')->where('begin_date','>',Carbon::now())
                 ->with(['placeTrips' => function($query) {
                     $query->with('place');
-            }, 'tripPhotos' => function ($query) {
-                    $query->select(['id', 'trip_id']);
-                }])->get();
+            }, 'tripPhotos'])->get();
         }
 
         error_log('Get upcoming trips request succeeded!');
@@ -139,9 +131,7 @@ class TripController extends BaseController
         where('expire_date','<',Carbon::now())->
         with(['types','placeTrips' => function($query){
             $query->with('place');
-        }, 'tripPhotos' => function ($query) {
-            $query->select(['id', 'trip_id']);
-        }])->get();}
+        }, 'tripPhotos'])->get();}
         else{
             $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])->
             withCount('customerTrips')->
@@ -151,9 +141,7 @@ class TripController extends BaseController
             with('types')->where('expire_date','<',Carbon::now())
                 ->with(['placeTrips' => function ($query){
                     $query->with('place');
-                }, 'tripPhotos' => function ($query) {
-                    $query->select(['id', 'trip_id']);
-                }])->get();
+                }, 'tripPhotos'])->get();
         }
 
 
@@ -544,9 +532,8 @@ class TripController extends BaseController
     public function getTrips()
     {
         error_log('Get trips request!');
-        $trips = Trip::with(['placeTrips','types','tripPhotos'=>function($query){
-                $query->select(['id','trip_id']);
-            }])->where('begin_date','>',Carbon::now())->orderByDesc('created_at')->paginate(10);
+        $trips = Trip::with(['placeTrips','types','tripPhotos'])
+            ->where('begin_date','>',Carbon::now())->orderByDesc('created_at')->paginate(10);
 
 
 
@@ -570,5 +557,6 @@ class TripController extends BaseController
         Storage::put('public/trips/'.$filename . $extention, $image);
         return Storage::url('public/trips/' .$filename . $extention);
     }
+
 
 }

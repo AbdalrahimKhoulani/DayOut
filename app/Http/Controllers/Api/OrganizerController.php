@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Organizer;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -92,4 +93,23 @@ class OrganizerController extends BaseController
         Storage::disk('users')->put($filename . $extention, $image);
         return Storage::disk('users')->url('users/'.$filename . $extention);
     }
+
+    public function deleteProfileImage(){
+        $id = Auth::id();
+        $user = User::find($id);
+        $file = Storage::path($user['photo']);
+        $file = str_replace('/', '\\', $file);
+
+        $pieces = explode('\\', $file);
+
+
+        $last_word = array_pop($pieces);
+        Storage::disk('public')->delete('users/'.$last_word);
+
+        $user['photo']='';
+        $user->save();
+        error_log('File deleted successful');
+        return $this->sendResponse($user,'Succeeded');
+    }
+
 }
