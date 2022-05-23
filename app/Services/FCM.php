@@ -4,10 +4,23 @@ namespace App\Services;
 
 class FCM
 {
+
+    private function getTokens($users)
+    {
+        $tokens = [];
+
+        foreach ($users as $user) {
+            if ($user->mobile_token != null) {
+                array_push($tokens,$user->mobile_token);
+            }
+        }
+        return $tokens;
+    }
+
     public function sendNotification($users, $title, $body)
     {
 
-        $tokens = getTokens($users);
+        $tokens = $this->getTokens($users);
 
         $SERVER_API_KEY = 'AAAASWsX8NI:APA91bHB9RYjymdjEjDrqGoFcn_cZZGRhFiDk9iBCWo1bLHEqcOdwmR7WEcETHPAzwFwBikHG__8h7QayxXGokY1eoY4AJ0RYcjNQ5xlj2r83bBPe3rYlsh6JOs8OPNowiSjOjY-7ApH';
 //        $token_1 = 'Test Token';
@@ -42,16 +55,7 @@ class FCM
 //        dd($response);
     }
 
-    private function getTokens($users)
-    {
-        $tokens = [];
-        foreach ($users as $user) {
-            if ($user->mobile_token != null) {
-                $tokens[$user->mobile_token];
-            }
-        }
-        return $tokens;
-    }
+
 
     private function storeNotifications($users, $title, $body)
     {
@@ -65,4 +69,6 @@ class FCM
 
 
     }
+
+
 }

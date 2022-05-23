@@ -80,24 +80,10 @@ class PlaceController extends Controller
         $place_images = [];
         for ($i = 0; $i < count($photos); $i++) {
 
-              Storage::putFile(
-                    'places/',$photos[$i]) ;
+             $path =  Storage::putFile(
+                    'public/places',$photos[$i]) ;
 
-            $path = Storage::url('places/'.$photos[$i]);
-
-//            $img_data = $photos[$i];
-//            $image = base64_decode($img_data);
-//            $file = finfo_open();
-//            $result = finfo_buffer($file, $image, FILEINFO_MIME_TYPE);
-//
-//            $filename = uniqid();
-//            $extension = str_replace('image/', '.', $result);
-//
-//            $path =  Storage::put('public/places/' . $filename . $extension, $image);
-//
-//            $path = Storage::url('public/places/'.$photos[$i]);
-           // dd($photos);
-            dd($path);
+            $path = Storage::url($path);
 
             $place_images[$i] = PlacePhotos::create([
                 'place_id' => $place->id,

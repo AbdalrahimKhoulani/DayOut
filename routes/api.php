@@ -23,6 +23,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('/notify',function(Request $request){
+
+    $user = User::where('id', $request['user_id'])->get();
+    $fcm = new FCM();
+    $fcm->sendNotification($user,$request['title'],$request['body']);
+});
+
 
 Route::prefix('/place')->controller(PlaceController::class)->group(function () {
 
