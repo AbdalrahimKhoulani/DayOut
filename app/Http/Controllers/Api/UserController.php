@@ -22,8 +22,30 @@ use function PHPUnit\Framework\isEmpty;
 
 class UserController extends BaseController
 {
+    public function logout(){
+        if(Auth::check()){
+            $user = Auth::user();
+
+            $user['mobile_token'] = null;
+            $user->save();
+
+           $user->token()->revoke();
+           return $this->sendResponse([],'User logged out successfully');
+        }
+        return $this->sendError('Wrong occurred !! retry');
+    }
+
     public function login(Request $request)
     {
+        $validator = Validator::make($request->all(),[
+            'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
+            'password' => 'required'
+        ]);
+
+        if($validator->fails()){
+            return $this->sendError('Validation error check data',$validator->errors());
+        }
+
         error_log('Login request');
         if (Auth::attempt(['phone_number' => $request->phone_number, 'password' => $request->password])) {
             $user = Auth::user();
@@ -32,7 +54,9 @@ class UserController extends BaseController
             $success['token'] = $user->createToken($user->phone_number )->accessToken;
 
             $user = Auth::user();
-            $user->mobile_token = $request['mobile_token'];
+
+            $user->save();
+
             error_log('Login successful!');
 
             return $this->sendResponse($success, 'Login successful!');
@@ -41,6 +65,25 @@ class UserController extends BaseController
             return $this->sendError('Login information are not correct!', ['error' => 'Unauthorized'], 404);
 
         }
+    }
+    public function setMobileToken(Request $request){
+        $validator = Validator::make($request->all(),[
+            'mobile_token'=>'required'
+        ]);
+
+        if($validator->fails()){
+            return $this->sendError('Validation error',$validator->errors());
+        }
+
+        $user = Auth::user();
+        if($user ==null){
+            return $this->sendError('Unauthenticated');
+        }
+
+        $user['mobile_token'] = $request['mobile_token'];
+        $user->save();
+
+        return $this->sendResponse($user,'Mobile token saved');
     }
 
     public function register(Request $request)

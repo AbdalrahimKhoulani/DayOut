@@ -225,7 +225,7 @@ class TripController extends BaseController
     }
 
 
-    public function editTrip(Request $request, $id)
+    public function editTrip(Request $request)
     {
 
 
@@ -237,13 +237,13 @@ class TripController extends BaseController
         }
 
         $validator = Validator::make($request->all(), [
+            'trip_id'=>'required',
             'title' => 'string',
             'description' => 'string',
             'begin_date' => 'required',
             'expire_date' => 'required',
             'end_booking' => 'required',
             'price' => 'numeric',
-            'types' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -251,7 +251,7 @@ class TripController extends BaseController
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
 
-        $trip = Trip::find($id);
+        $trip = Trip::find($request['trip_id']);
 
         if ($trip == null) {
             error_log('Trip not found');

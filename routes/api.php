@@ -67,6 +67,8 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/customer/edit', 'editProfileCustomer');
+        Route::get('/logout','logout');
+        Route::put('/mobile-token','setMobileToken');
     });
 });
 
@@ -95,7 +97,7 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
 
         Route::get('/organizer', 'organizerTrip');
 
-        Route::put('/{id}/edit', 'editTrip');
+        Route::put('/edit', 'editTrip');
 
         Route::put('/edit/photos', 'editTripPhotos');
         Route::put('/edit/places', 'editTripPlaces');
