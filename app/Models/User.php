@@ -115,4 +115,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Trip::class, 'customer_trips', 'customer_id', 'trip_id');
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id','id');
+    }
 }

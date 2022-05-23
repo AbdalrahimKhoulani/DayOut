@@ -112,6 +112,10 @@ return new class extends Migration {
             $table->foreign('trip_id')->references('id')->on('trips')->cascadeOnDelete()->cascadeOnUpdate();;
         });
 
+        Schema::table('notifications', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();;
+        });
+
     }
 
     /**
@@ -211,6 +215,11 @@ return new class extends Migration {
 
         Schema::table('trip_photos', function (Blueprint $table) {
             $table->dropForeign('trip_id');
+
+        });
+
+        Schema::table('notifications', function (Blueprint $table) {
+            $table->dropForeign('user_id');
 
         });
     }

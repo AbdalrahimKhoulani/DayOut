@@ -79,14 +79,14 @@ class PlaceController extends BaseController
     {
         $photo = PlacePhotos::find($id);
 
-       $test =  Storage::get($photo->path);
-       // $img_data = base64_decode($photo->path);
-       // $image = imagecreatefromstring($img_data);
 
-       // $finfo = finfo_open();
-        //$extension = finfo_buffer($finfo, $img_data, FILEINFO_MIME_TYPE);
-       // header('Content-Type: image/' . str_replace('image/', '', $extension));
-        return $test;
+        $img_data = base64_decode($photo->path);
+        $image = imagecreatefromstring($img_data);
+
+        $finfo = finfo_open();
+        $extension = finfo_buffer($finfo, $img_data, FILEINFO_MIME_TYPE);
+        header('Content-Type: image/' . str_replace('image/', '', $extension));
+        return imagejpeg($image);
     }
 
 }
