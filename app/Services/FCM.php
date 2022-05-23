@@ -49,7 +49,7 @@ class FCM
         $response = curl_exec($ch);
 
         if ($response) {
-            storeNotifications($users, $title, $body);
+            $this->storeNotifications($users, $title, $body);
         }
 
 //        dd($response);
@@ -69,6 +69,7 @@ class FCM
 
 
     }
+
 
 
 }
