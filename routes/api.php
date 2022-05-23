@@ -24,18 +24,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-Route::get('/notify', function (Request $request) {
-
-    $user = User::find($request['user_id']);
-
-    $fcm = new FCM();
-
-    $fcm->sendNotification($user, $request['title'], $request['body']);
-});
-
-//
-
-
 Route::prefix('/place')->controller(PlaceController::class)->group(function () {
 
     Route::get('', 'index');
@@ -90,9 +78,9 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::post('/create/add/places', 'addPlacesToTrip');
         Route::post('/create/add/types', 'addTripType');
 
-        Route::get('/active', 'getActiveTrips');
-        Route::get('/upcoming', 'getUpcomingTrips');
-        Route::get('/history', 'getHistoryTrips');
+        Route::get('/active/{type}','getActiveTrips');
+        Route::get('/upcoming/{type}','getUpcomingTrips');
+        Route::get('/history/{type}','getHistoryTrips');
 
 
         Route::get('/organizer', 'organizerTrip');
@@ -102,7 +90,6 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::put('/edit/photos', 'editTripPhotos');
         Route::put('/edit/places', 'editTripPlaces');
         Route::put('/{id}/edit/types', 'editTripTypes');
-
 
         Route::post('/book', 'bookTrip');
         Route::post('/rate', 'rateTrip');
@@ -116,6 +103,7 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/edit', 'editOrganizerProfile');
+        Route::delete('/profile/delete/photo','deleteProfileImage');
 
     });
 });

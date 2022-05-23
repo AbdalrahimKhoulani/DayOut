@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Organizer;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -58,14 +59,8 @@ class OrganizerController extends BaseController
                 $organizer['user']->first_name = $request['first_name'];
             if ($request->has('last_name'))
                 $organizer['user']->last_name = $request['last_name'];
-            if ($request->has('photo')) {
-                $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
-                $request['photo'] = str_replace('data:image/webp;base64,', '', $request['photo']);
-                $request['photo'] = str_replace('data:image/jpeg;base64,', '', $request['photo']);
-                $request['photo'] = str_replace('data:image/bmp;base64,', '', $request['photo']);
-                $request['photo'] = str_replace(' ', '+', $request['photo']);
-                $organizer['user']->photo = $request['photo'];
-            }
+            if ($request->has('photo'))
+                $organizer['user']->photo = $this->storeProfileImage($request['photo']);
             if ($request->has('gender'))
                 $organizer['user']->gender = $request['gender'];
             if ($request->has('bio'))
@@ -74,7 +69,6 @@ class OrganizerController extends BaseController
                 $organizer['user']->email = $request['email'];
             $organizer['user']->save();
             $organizer->save();
-            $organizer['user']->makeHidden('photo');
             error_log('Organizer edit request succeeded!');
             return $this->sendResponse($organizer, 'Edit succeeded!');
         }
@@ -83,19 +77,39 @@ class OrganizerController extends BaseController
 
     }
 
-    private function storeProfileImage($firstname, $lastname, $photo)
+    private function storeProfileImage( $photo)
     {
         $image = base64_decode($photo);
+        $filename = uniqid();
         $extention = '.png';
         $f = finfo_open();
         $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
-        if ($result == 'image/jpeg')
+        if($result == 'image/jpeg')
             $extention = '.jpeg';
         elseif ($result == 'image/webp')
             $extention = '.webp';
-        elseif ($result == 'image/x-ms-bmp')
+        elseif($result == 'image/x-ms-bmp')
             $extention = '.bmp';
-        Storage::disk('local')->put('public/organizers/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention, $image);
-        return Storage::url('organizers/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention);
+        Storage::disk('users')->put($filename . $extention, $image);
+        return Storage::disk('users')->url('users/'.$filename . $extention);
     }
+
+    public function deleteProfileImage(){
+        $id = Auth::id();
+        $user = User::find($id);
+        $file = Storage::path($user['photo']);
+        $file = str_replace('/', '\\', $file);
+
+        $pieces = explode('\\', $file);
+
+
+        $last_word = array_pop($pieces);
+        Storage::disk('public')->delete('users/'.$last_word);
+
+        $user['photo']='';
+        $user->save();
+        error_log('File deleted successful');
+        return $this->sendResponse($user,'Succeeded');
+    }
+
 }
