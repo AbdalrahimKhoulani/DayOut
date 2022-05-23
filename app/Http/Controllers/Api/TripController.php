@@ -583,7 +583,10 @@ class TripController extends BaseController
     public function getTrips()
     {
         error_log('Get trips request!');
-        $trips = Trip::with(['placeTrips','types','tripPhotos'])
+        $trips = Trip::with(['placeTrips','types','tripPhotos'])->withCount('customerTrips')
+            ->with(['placeTrips' => function($query){
+                $query->with('place:id,name');
+            }])
             ->where('begin_date','>',Carbon::now())->orderByDesc('created_at')->paginate(10);
 
 
