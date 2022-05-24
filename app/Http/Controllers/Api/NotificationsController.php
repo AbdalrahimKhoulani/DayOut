@@ -15,9 +15,6 @@ class NotificationsController extends BaseController
 
         $notifications = $user->notifications;
 
-        if(count($notifications)==0){
-            return $this->sendError('No Notifications');
-        }
 
         return $this->sendResponse($notifications,'Notification retrieved successfully');
     }

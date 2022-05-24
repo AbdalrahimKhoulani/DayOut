@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Notification;
+
 class FCM
 {
 
@@ -22,10 +24,10 @@ class FCM
 
         $tokens = $this->getTokens($users);
 
-        $SERVER_API_KEY = 'AAAASWsX8NI:APA91bHB9RYjymdjEjDrqGoFcn_cZZGRhFiDk9iBCWo1bLHEqcOdwmR7WEcETHPAzwFwBikHG__8h7QayxXGokY1eoY4AJ0RYcjNQ5xlj2r83bBPe3rYlsh6JOs8OPNowiSjOjY-7ApH';
+        $SERVER_API_KEY = 'AAAARMT3glg:APA91bFoDA_1z1XjPlgnHqS9nneNxE_Xl4u5HaTtotF1Hq4woVVnBwlsQ1EEUQAfiH-hRk85Vn6hHauvmYp1RH8d15EuLKR0jbJDw6nq92GGTDrztkT6NLP3CpLWapyp-AO94v88luws';
 //        $token_1 = 'Test Token';
         $data = [
-            "registration_ids" => $tokens,
+            "registration_ids" => ['cU5k0dkITCeXKRFeth0rCi:APA91bEzkpE9-j6KRKmsQloPyTRk5OuJbr70qyUfc-LPe5yindDAHN6gx37pT1oyR4YRyQ6YcZNHgvMcIy0TLTiLI6fGMhgHO_4dI6X4FpScczvTOPr1YSAwh3Tz2Kj-e64_bPU817yi'],
             "notification" => [
                 "title" => $title,
                 "body" => $body,
@@ -51,7 +53,7 @@ class FCM
         if ($response) {
             $this->storeNotifications($users, $title, $body);
         }
-
+        error_log($response);
 //        dd($response);
     }
 

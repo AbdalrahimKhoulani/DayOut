@@ -96,7 +96,7 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
 
         Route::put('/edit/photos', 'editTripPhotos');
         Route::put('/edit/places', 'editTripPlaces');
-        Route::put('/{id}/edit/types', 'editTripTypes');
+        Route::put('/edit/types', 'editTripType');
 
         Route::post('/book', 'bookTrip');
         Route::post('/rate', 'rateTrip');

@@ -11,6 +11,7 @@ use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Organizer;
 use App\Models\PlaceTrip;
@@ -90,6 +91,7 @@ class TripController extends BaseController
     {
         error_log('Get upcoming trips request!');
         $id = Auth::id();
+
         if($type == "organizer")
         {
             $organizer = Organizer::where('user_id',$id)->first();
@@ -277,7 +279,7 @@ class TripController extends BaseController
         $trip->save();
 
 
-        error_log('Add trip succeeded!');
+        error_log('Edit trip succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
 
     }
@@ -407,6 +409,7 @@ class TripController extends BaseController
             'places' => 'required'
         ]);
 
+        error_log($request['trip_id']);
         if ($validator->fails()) {
             error_log($validator->errors());
             return $this->sendError('Validator failed! check the data', $validator->errors());
@@ -484,6 +487,7 @@ class TripController extends BaseController
             return $this->sendError('Trip not exist!');
         }
         $types = $request->types;
+        $types = Arr::only($types,['type_id']);
         $trip->types()->sync($types);
         $trip->load(['tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
@@ -497,7 +501,8 @@ class TripController extends BaseController
     public function getTripDetails($id)
     {
         error_log('Get trip details!');
-        $trip = Trip::find($id)
+
+        $trip = Trip::where('id',$id)
             ->with(['types','customerTrips'=>function($query){
                 return $query->with('user');
             },'placeTrips','tripPhotos'=>function($query){
