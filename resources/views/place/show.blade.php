@@ -24,7 +24,7 @@
                                                 <div class="swiper-slide">
                                                     <div>
                                                         <img class="img-responsive image"
-                                                             src="{{'data:image/png;base64, '.$photo->path}}"
+                                                             src="{{asset($photo->path)}}"
                                                              alt="1">
                                                     </div>
                                                 </div>

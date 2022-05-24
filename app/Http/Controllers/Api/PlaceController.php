@@ -19,9 +19,7 @@ class PlaceController extends BaseController
     public function index()
     {
         error_log('Get places request!');
-        $places = Place::with(['photos' => function($query){
-            $query->select(['id','place_id']);
-        }])->paginate(10);
+        $places = Place::with(['photos'])->paginate(10);
         error_log('Get places request succeeded!');
         return $this->sendResponse($places, 'Succeeded');
     }
@@ -30,7 +28,7 @@ class PlaceController extends BaseController
     {
 
         error_log('Popular places request');
-        $places = Place::with('photos:id,place_id')->withCount('placeTrips')
+        $places = Place::with('photos')->withCount('placeTrips')
             ->withCount(['favorites' => function ($query) use ($id) {
             $query->where('user_id', $id);
         }])->get();
@@ -79,14 +77,14 @@ class PlaceController extends BaseController
     {
         $photo = PlacePhotos::find($id);
 
-       $test =  Storage::get($photo->path);
-       // $img_data = base64_decode($photo->path);
-       // $image = imagecreatefromstring($img_data);
 
-       // $finfo = finfo_open();
-        //$extension = finfo_buffer($finfo, $img_data, FILEINFO_MIME_TYPE);
-       // header('Content-Type: image/' . str_replace('image/', '', $extension));
-        return $test;
+        $img_data = base64_decode($photo->path);
+        $image = imagecreatefromstring($img_data);
+
+        $finfo = finfo_open();
+        $extension = finfo_buffer($finfo, $img_data, FILEINFO_MIME_TYPE);
+        header('Content-Type: image/' . str_replace('image/', '', $extension));
+        return imagejpeg($image);
     }
 
 }

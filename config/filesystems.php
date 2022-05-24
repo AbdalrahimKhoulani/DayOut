@@ -43,6 +43,14 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+        'users' => [
+            'driver' => 'local',
+            'root'   =>  storage_path('app/public/users'),
+        ],
+        'trips' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/trips'),
+        ],
 
         's3' => [
             'driver' => 's3',

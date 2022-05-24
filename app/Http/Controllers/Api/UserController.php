@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\ConfirmationCode;
+use App\Models\PlacePhotos;
 use App\Models\PromotionRequest;
 use App\Models\PromotionStatus;
 use App\Models\Role;
@@ -10,6 +11,7 @@ use App\Models\User;
 
 
 use App\Models\UserRole;
+use Intervention\Image\Facades\Image;
 use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -21,8 +23,30 @@ use function PHPUnit\Framework\isEmpty;
 
 class UserController extends BaseController
 {
+    public function logout(){
+        if(Auth::check()){
+            $user = Auth::user();
+
+            $user['mobile_token'] = null;
+            $user->save();
+
+           $user->token()->revoke();
+           return $this->sendResponse([],'User logged out successfully');
+        }
+        return $this->sendError('Wrong occurred !! retry');
+    }
+
     public function login(Request $request)
     {
+        $validator = Validator::make($request->all(),[
+            'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
+            'password' => 'required'
+        ]);
+
+        if($validator->fails()){
+            return $this->sendError('Validation error check data',$validator->errors());
+        }
+
         error_log('Login request');
         if (Auth::attempt(['phone_number' => $request->phone_number, 'password' => $request->password])) {
             $user = Auth::user();
@@ -30,13 +54,37 @@ class UserController extends BaseController
             $success['role'] = $user->roles;
             $success['token'] = $user->createToken($user->phone_number )->accessToken;
 
+            $user = Auth::user();
+
+            $user->save();
+
             error_log('Login successful!');
+
             return $this->sendResponse($success, 'Login successful!');
         } else {
             error_log('Login information are not correct!');
             return $this->sendError('Login information are not correct!', ['error' => 'Unauthorized'], 404);
 
         }
+    }
+    public function setMobileToken(Request $request){
+        $validator = Validator::make($request->all(),[
+            'mobile_token'=>'required'
+        ]);
+
+        if($validator->fails()){
+            return $this->sendError('Validation error',$validator->errors());
+        }
+
+        $user = Auth::user();
+        if($user ==null){
+            return $this->sendError('Unauthenticated');
+        }
+
+        $user['mobile_token'] = $request['mobile_token'];
+        $user->save();
+
+        return $this->sendResponse($user,'Mobile token saved');
     }
 
     public function register(Request $request)
@@ -126,7 +174,23 @@ class UserController extends BaseController
         $promotionRequest = new PromotionRequest();
         $promotionRequest->status_id = $promotionStatus->id;
         $promotionRequest->user_id = $user->id;
-        $promotionRequest->credential_photo = $request['credential_photo'];
+
+        $photo = $request['credential_photo'];
+
+        $img_data = $photo;
+        $image = base64_decode($img_data);
+        $filename = uniqid();
+        //$extension = '.png';
+        $file = finfo_open();
+        $result = finfo_buffer($file, $image, FILEINFO_MIME_TYPE);
+        $extension = str_replace('image/', '.', $result);
+
+
+        $path =  Storage::put(
+            'public/credentials/'.$filename.$extension,$photo) ;
+
+
+        $promotionRequest->credential_photo = $path;
         if($request->has('description'))
             $promotionRequest->description = $request['description'];
         $promotionRequest->save();
@@ -231,7 +295,8 @@ class UserController extends BaseController
     public function profileCustomer($id)
     {
         error_log('Customer profile request');
-        $user = User::select(['id','first_name','last_name','email','phone_number','gender'])->withCount(['customerTrip', 'organizerFollow'])->find($id);
+        $user = User::where('id',$id)
+            ->withCount(['customerTrip', 'organizerFollow'])->first();
         if ($user != null) {
             error_log('Customer profile request succeeded!');
             return $this->sendResponse($user, 'Succeeded!');
@@ -273,24 +338,13 @@ class UserController extends BaseController
                 $user['first_name'] = $request['first_name'];
             if ($request->has('last_name'))
                 $user['last_name'] = $request['last_name'];
-            if ($request->has('photo')) {
-                if ($request->has('first_name') && $request->has('last_name'))
-                    $user['photo'] = $this->storeProfileImage($request['first_name'], $request['last_name'], $request['photo']);
-                elseif ($request->has('first_name'))
-                    $user['photo'] = $this->storeProfileImage($request['first_name'], $user['last_name'], $request['photo']);
-                elseif ($request->has('last_name'))
-                    $user['photo'] = $this->storeProfileImage($user['first_name'], $request['last_name'], $request['photo']);
-                else
-                    $user['photo'] = $this->storeProfileImage($user['first_name'], $user['last_name'], $request['photo']);
-
-
-            }
+            if ($request->has('photo'))
+                $user['photo']=$this->storeProfileImage($request['photo']);
             if($request->has('gender'))
                 $user['gender'] = $request['gender'];
             if($request->has('email'))
                 $user['email'] = $request['email'];
             $user->save();
-            $user->makeHidden('photo');
             error_log('Customer profile edit request succeeded!');
             return $this->sendResponse($user, 'Edit succeeded!');
         }
@@ -299,9 +353,10 @@ class UserController extends BaseController
 
     }
 
-    private function storeProfileImage($firstname, $lastname, $photo)
+    private function storeProfileImage( $photo)
     {
         $image = base64_decode($photo);
+        $filename = uniqid();
         $extention = '.png';
         $f = finfo_open();
         $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
@@ -311,19 +366,21 @@ class UserController extends BaseController
             $extention = '.webp';
         elseif($result == 'image/x-ms-bmp')
             $extention = '.bmp';
-        Storage::disk('local')->put('public/users/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention, $image);
-        return Storage::url('users/' . $firstname . $lastname . Carbon::now()->toDateString() . $extention);
+        Storage::disk('users')->put($filename . $extention, $image);
+        return Storage::disk('users')->url('users/'.$filename . $extention);
     }
 
     public function profilePhoto($id){
         $user = User::find($id);
 
-        $img_data = base64_decode($user->photo);
-        $image = imagecreatefromstring($img_data);
+        //$img_data = base64_decode($user->photo);
+       // $image = imagecreatefromstring($img_data);
 
-        $finfo = finfo_open();
-        $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
-        header('Content-Type: image/'.str_replace('image/','',$extension));
-        return imagejpeg($image);
+       // $finfo = finfo_open();
+       // $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
+      //  header('Content-Type: image/'.str_replace('image/','',$extension));
+
+        return $this->sendResponse($user->photo,'Succeeded');
     }
+
 }

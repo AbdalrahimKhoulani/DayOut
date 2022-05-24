@@ -4,8 +4,10 @@ use App\Http\Controllers\Api\PlaceController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\NotificationsController;
 use App\Http\Controllers\Api\OrganizerController;
 use App\Models\User;
+use App\Services\FCM;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +22,13 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::post('/notify',function(Request $request){
+
+    $user = User::where('id', $request['user_id'])->get();
+    $fcm = new FCM();
+    $fcm->sendNotification($user,$request['title'],$request['body']);
+});
 
 
 Route::prefix('/place')->controller(PlaceController::class)->group(function () {
@@ -53,40 +62,41 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/customer/edit', 'editProfileCustomer');
+        Route::get('/logout','logout');
+        Route::put('/mobile-token','setMobileToken');
     });
 });
 
-Route::prefix('/trip')->controller(TripController::class)->group(function (){
+Route::prefix('/trip')->controller(TripController::class)->group(function () {
 
-    Route::get('','getTrips');
-    Route::get('/{id}/details','getTripDetails');
-    Route::get('/types','getTypes');
+    Route::get('', 'getTrips');
+    Route::get('/{id}/details', 'getTripDetails');
+    Route::get('/types', 'getTypes');
 
-    Route::get('/photo/{id}','tripPhoto');
+    Route::get('/photo/{id}/base64', 'tripPhotoAsBase64');
 
-
-
+    Route::get('/{trip_id}/photos', 'getTripPhotos');
 
 
     Route::middleware('auth:api')->group(function () {
 
-        Route::post('/create','createTrip');
-        Route::post('/create/add/photos','addTripPhotos');
-        Route::post('/create/add/places','addPlacesToTrip');
-        Route::post('/create/add/types','addTripType');
+        Route::post('/create', 'createTrip');
+        Route::post('/create/add/photos', 'addTripPhotos');
+        Route::post('/create/add/places', 'addPlacesToTrip');
+        Route::post('/create/add/types', 'addTripType');
 
-        Route::get('/active','getActiveTrips');
-        Route::get('/upcoming','getUpcomingTrips');
-        Route::get('/history','getHistoryTrips');
+        Route::get('/active/{type}','getActiveTrips');
+        Route::get('/upcoming/{type}','getUpcomingTrips');
+        Route::get('/history/{type}','getHistoryTrips');
 
 
-        Route::get('/organizer','organizerTrip');
+        Route::get('/organizer', 'organizerTrip');
 
-        Route::put('/{id}/edit', 'editTrip');
+        Route::put('/edit', 'editTrip');
 
         Route::put('/edit/photos', 'editTripPhotos');
         Route::put('/edit/places', 'editTripPlaces');
-        Route::put('/{id}/edit/types', 'editTripTypes');
+        Route::put('/edit/types', 'editTripType');
 
         Route::post('/book', 'bookTrip');
         Route::post('/rate', 'rateTrip');
@@ -100,14 +110,19 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/edit', 'editOrganizerProfile');
+        Route::delete('/profile/delete/photo','deleteProfileImage');
 
     });
 });
 
 
-Route::prefix('/search')->controller(SearchController::class)->group(function(){
-    Route::middleware('auth:api')->group(function(){
+Route::prefix('/search')->controller(SearchController::class)->group(function () {
+    Route::middleware('auth:api')->group(function () {
         Route::post('/trip', 'search');
     });
+});
+
+Route::middleware('auth:api')->controller(NotificationsController::class)->group(function () {
+    Route::get('/notifications', 'index');
 });
 
