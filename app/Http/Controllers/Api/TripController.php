@@ -300,6 +300,7 @@ class TripController extends BaseController
         }
 
         $types = $request['types'];
+        $types = Arr::only($types,['type_id']);
 
         $trip->types()->sync($types);
         $trip['types'] = $trip->types;
