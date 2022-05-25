@@ -300,9 +300,11 @@ class TripController extends BaseController
         }
 
         $types = $request['types'];
-        $types = Arr::only($types,['type_id']);
+        for ($i=0 ; $i<sizeof($types) ; $i++)
+        {
+            $trip->types()->attach($types[$i]['type_id']);
+        }
 
-        $trip->types()->sync($types);
         $trip['types'] = $trip->types;
 
         return $this->sendResponse($trip, 'Succeeded!');
@@ -487,9 +489,11 @@ class TripController extends BaseController
             error_log('Trip not exist!');
             return $this->sendError('Trip not exist!');
         }
-        $types = $request->types;
-        $types = Arr::only($types,['type_id']);
-        $trip->types()->sync($types);
+        $types = $request['types'];
+        for ($i=0 ; $i<sizeof($types) ; $i++)
+        {
+            $trip->types()->attach($types[$i]['type_id']);
+        }
         $trip->load(['tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
         }]);
@@ -506,7 +510,9 @@ class TripController extends BaseController
         $trip = Trip::where('id',$id)
             ->with(['types','customerTrips'=>function($query){
                 return $query->with('user');
-            },'placeTrips','tripPhotos'=>function($query){
+            },'placeTrips'=> function($query){
+                $query->with('place');
+            },'tripPhotos'=>function($query){
                 $query->select(['id','trip_id']);
             }])->first();
         if ($trip == null) {
