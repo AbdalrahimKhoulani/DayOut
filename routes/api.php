@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+//TODO: delete profile image for customer, trip rate value for customer
+
 Route::post('/notify',function(Request $request){
 
     $user = User::where('id', $request['user_id'])->get();
@@ -55,7 +57,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 
     // Route::post('/confirm', 'confirmAccount');
 
-    Route::get('/profile/{id}/photo', 'profilePhoto');
+    //Route::get('/profile/{id}/photo', 'profilePhoto');
     Route::get('/profile/customer/{id}', 'profileCustomer');
 
 
@@ -96,7 +98,7 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
 
         Route::put('/edit/photos', 'editTripPhotos');
         Route::put('/edit/places', 'editTripPlaces');
-        Route::put('/edit/types', 'editTripType');
+        Route::put('/edit/types/{id}', 'editTripTypes');
 
         Route::post('/book', 'bookTrip');
         Route::post('/rate', 'rateTrip');
