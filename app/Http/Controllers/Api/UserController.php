@@ -23,28 +23,29 @@ use function PHPUnit\Framework\isEmpty;
 
 class UserController extends BaseController
 {
-    public function logout(){
-        if(Auth::check()){
+    public function logout()
+    {
+        if (Auth::check()) {
             $user = Auth::user();
 
             $user['mobile_token'] = null;
             $user->save();
 
-           $user->token()->revoke();
-           return $this->sendResponse([],'User logged out successfully');
+            $user->token()->revoke();
+            return $this->sendResponse([], 'User logged out successfully');
         }
         return $this->sendError('Wrong occurred !! retry');
     }
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
             'password' => 'required'
         ]);
 
-        if($validator->fails()){
-            return $this->sendError('Validation error check data',$validator->errors());
+        if ($validator->fails()) {
+            return $this->sendError('Validation error check data', $validator->errors());
         }
 
         error_log('Login request');
@@ -52,7 +53,7 @@ class UserController extends BaseController
             $user = Auth::user();
             $success['id'] = $user->id;
             $success['role'] = $user->roles;
-            $success['token'] = $user->createToken($user->phone_number )->accessToken;
+            $success['token'] = $user->createToken($user->phone_number)->accessToken;
 
             $user = Auth::user();
 
@@ -67,24 +68,26 @@ class UserController extends BaseController
 
         }
     }
-    public function setMobileToken(Request $request){
-        $validator = Validator::make($request->all(),[
-            'mobile_token'=>'required'
+
+    public function setMobileToken(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'mobile_token' => 'required'
         ]);
 
-        if($validator->fails()){
-            return $this->sendError('Validation error',$validator->errors());
+        if ($validator->fails()) {
+            return $this->sendError('Validation error', $validator->errors());
         }
 
         $user = Auth::user();
-        if($user ==null){
+        if ($user == null) {
             return $this->sendError('Unauthenticated');
         }
 
         $user['mobile_token'] = $request['mobile_token'];
         $user->save();
 
-        return $this->sendResponse($user,'Mobile token saved');
+        return $this->sendResponse($user, 'Mobile token saved');
     }
 
     public function register(Request $request)
@@ -140,11 +143,10 @@ class UserController extends BaseController
             'photo' => 'string',
             'gender' => 'required|in:Male,Female',
             'mobile_token' => 'string',
-            'credential_photo'=>'required',
+            'credential_photo' => 'required',
             //'credential_photo'=>'required|is_img',
-            'description'=>'string'
+            'description' => 'string'
         ]);
-
 
 
         if ($validator->fails()) {
@@ -186,12 +188,12 @@ class UserController extends BaseController
         $extension = str_replace('image/', '.', $result);
 
 
-        $path =  Storage::put(
-            'public/credentials/'.$filename.$extension,$photo) ;
+        $path = Storage::put(
+            'public/credentials/' . $filename . $extension, $photo);
 
 
         $promotionRequest->credential_photo = $path;
-        if($request->has('description'))
+        if ($request->has('description'))
             $promotionRequest->description = $request['description'];
         $promotionRequest->save();
 
@@ -228,7 +230,7 @@ class UserController extends BaseController
         $confirm_code->delete();
 
 
-        $success['token'] = $user->createToken($user->phone_number.$user->password)->accessToken;
+        $success['token'] = $user->createToken($user->phone_number . $user->password)->accessToken;
 
         return $this->sendResponse($success, "The confirmation process succeeded");
     }
@@ -247,7 +249,7 @@ class UserController extends BaseController
             return $this->sendError('The account is not exists');
         }
 
-       // dd($user->organizer);
+        // dd($user->organizer);
 
         if ($user->organizer != null) {
             return $this->sendError('The account already have organizer role');
@@ -263,7 +265,7 @@ class UserController extends BaseController
             $promotionRequest->status_id = $promotionStatus->id;
             $promotionRequest->user_id = Auth::id();
             $promotionRequest->credential_photo = $request['credential_photo'];
-            if($request->has('description'))
+            if ($request->has('description'))
                 $promotionRequest->description = $request['description'];
             $promotionRequest->save();
 
@@ -274,7 +276,7 @@ class UserController extends BaseController
             return $this->sendResponse($success, 'The promotion request was successfully sent');
         }
 
-     return $this->sendError('Promotion request failure!');
+        return $this->sendError('Promotion request failure!');
     }
 
     private function createConfirmCodeForUser($user_id)
@@ -295,7 +297,7 @@ class UserController extends BaseController
     public function profileCustomer($id)
     {
         error_log('Customer profile request');
-        $user = User::where('id',$id)
+        $user = User::where('id', $id)
             ->withCount(['customerTrip', 'organizerFollow'])->first();
         if ($user != null) {
             error_log('Customer profile request succeeded!');
@@ -318,7 +320,6 @@ class UserController extends BaseController
         }
 
 
-
         $validator = Validator::make($request->all(), [
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
@@ -338,11 +339,19 @@ class UserController extends BaseController
                 $user['first_name'] = $request['first_name'];
             if ($request->has('last_name'))
                 $user['last_name'] = $request['last_name'];
-            if ($request->has('photo'))
-                $user['photo']=$this->storeProfileImage($request['photo']);
-            if($request->has('gender'))
+            if ($request->has('photo')) {
+                $file = Storage::path($user['photo']);
+                $file = str_replace('/', '\\', $file);
+
+                $pieces = explode('\\', $file);
+
+                $last_word = array_pop($pieces);
+                Storage::disk('public')->delete('\users\\' . $last_word);
+                $user['photo'] = $this->storeProfileImage($request['photo']);
+            }
+            if ($request->has('gender'))
                 $user['gender'] = $request['gender'];
-            if($request->has('email'))
+            if ($request->has('email'))
                 $user['email'] = $request['email'];
             $user->save();
             error_log('Customer profile edit request succeeded!');
@@ -353,34 +362,35 @@ class UserController extends BaseController
 
     }
 
-    private function storeProfileImage( $photo)
+    private function storeProfileImage($photo)
     {
         $image = base64_decode($photo);
         $filename = uniqid();
         $extention = '.png';
         $f = finfo_open();
         $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
-        if($result == 'image/jpeg')
+        if ($result == 'image/jpeg')
             $extention = '.jpeg';
         elseif ($result == 'image/webp')
             $extention = '.webp';
-        elseif($result == 'image/x-ms-bmp')
+        elseif ($result == 'image/x-ms-bmp')
             $extention = '.bmp';
         Storage::disk('users')->put($filename . $extention, $image);
-        return Storage::disk('users')->url('users/'.$filename . $extention);
+        return Storage::disk('users')->url('users/' . $filename . $extention);
     }
 
-    public function profilePhoto($id){
+    public function profilePhoto($id)
+    {
         $user = User::find($id);
 
         //$img_data = base64_decode($user->photo);
-       // $image = imagecreatefromstring($img_data);
+        // $image = imagecreatefromstring($img_data);
 
-       // $finfo = finfo_open();
-       // $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
-      //  header('Content-Type: image/'.str_replace('image/','',$extension));
+        // $finfo = finfo_open();
+        // $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
+        //  header('Content-Type: image/'.str_replace('image/','',$extension));
 
-        return $this->sendResponse($user->photo,'Succeeded');
+        return $this->sendResponse($user->photo, 'Succeeded');
     }
 
 }

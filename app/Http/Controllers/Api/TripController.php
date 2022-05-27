@@ -300,9 +300,10 @@ class TripController extends BaseController
         }
 
         $types = $request['types'];
+        $trip->types()->detach();
         for ($i=0 ; $i<sizeof($types) ; $i++)
         {
-            $trip->types()->attach($types[$i]['type_id']);
+            $trip->types()->attach($types[$i]['id']);
         }
 
         $trip['types'] = $trip->types;
