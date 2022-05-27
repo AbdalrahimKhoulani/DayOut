@@ -340,6 +340,7 @@ class UserController extends BaseController
             if ($request->has('last_name'))
                 $user['last_name'] = $request['last_name'];
             if ($request->has('photo')) {
+
                 $file = Storage::path($user['photo']);
                 $file = str_replace('/', '\\', $file);
 
@@ -347,7 +348,10 @@ class UserController extends BaseController
 
                 $last_word = array_pop($pieces);
                 Storage::disk('public')->delete('\users\\' . $last_word);
+                $user['photo'] = '';
+                if($request['photo'] != '')
                 $user['photo'] = $this->storeProfileImage($request['photo']);
+
             }
             if ($request->has('gender'))
                 $user['gender'] = $request['gender'];
