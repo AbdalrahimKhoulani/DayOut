@@ -85,6 +85,7 @@ class PlaceController extends Controller
 
             $path = Storage::url($path);
 
+            
             $place_images[$i] = PlacePhotos::create([
                 'place_id' => $place->id,
                 'path' => $path

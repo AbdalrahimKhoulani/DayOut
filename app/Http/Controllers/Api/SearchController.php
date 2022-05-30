@@ -3,13 +3,23 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\BaseController;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Trip;
 
 class SearchController extends BaseController
 {
     public function search(Request $request){
-        $trips = Trip::with('types');
+
+        $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+            ->where('begin_date','>',Carbon::now())->
+            withCount('customerTrips')->
+            with(['types','placeTrips'=> function($query){
+                $query->with('place');
+            }, 'tripPhotos' ]);
+
+
+        //$trips = Trip::with('types');
 
 
         if($request->has('title')){
@@ -25,6 +35,8 @@ class SearchController extends BaseController
         }
 
         if($request->has('min_price')){
+
+
             $trips= $trips->where('price','>=',$request['min_price']);
         }
 
