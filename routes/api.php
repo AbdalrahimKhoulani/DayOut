@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Services\FCM;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\BookingsController;
+use App\Http\Controllers\Api\CheckOutController;
 
 
 /*
@@ -25,11 +27,12 @@ use Illuminate\Support\Facades\Route;
 
 //TODO: delete profile image for customer, trip rate value for customer
 
-Route::post('/notify',function(Request $request){
+
+Route::post('/notify', function (Request $request) {
 
     $user = User::where('id', $request['user_id'])->get();
     $fcm = new FCM();
-    $fcm->sendNotification($user,$request['title'],$request['body']);
+    $fcm->sendNotification($user, $request['title'], $request['body']);
 });
 
 
@@ -64,8 +67,8 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/customer/edit', 'editProfileCustomer');
-        Route::get('/logout','logout');
-        Route::put('/mobile-token','setMobileToken');
+        Route::get('/logout', 'logout');
+        Route::put('/mobile-token', 'setMobileToken');
     });
 });
 
@@ -87,9 +90,9 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::post('/create/add/places', 'addPlacesToTrip');
         Route::post('/create/add/types', 'addTripType');
 
-        Route::get('/active/{type}','getActiveTrips');
-        Route::get('/upcoming/{type}','getUpcomingTrips');
-        Route::get('/history/{type}','getHistoryTrips');
+        Route::get('/active/{type}', 'getActiveTrips');
+        Route::get('/upcoming/{type}', 'getUpcomingTrips');
+        Route::get('/history/{type}', 'getHistoryTrips');
 
 
         Route::get('/organizer', 'organizerTrip');
@@ -102,6 +105,11 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
 
         Route::post('/book', 'bookTrip');
         Route::post('/rate', 'rateTrip');
+
+        Route::put('/{id}/begin', 'beginTrip');
+        Route::put('/{id}/end', 'endTrip');
+
+
     });
 });
 
@@ -112,7 +120,7 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/edit', 'editOrganizerProfile');
-        Route::delete('/profile/delete/photo','deleteProfileImage');
+        Route::delete('/profile/delete/photo', 'deleteProfileImage');
 
     });
 });
@@ -124,7 +132,19 @@ Route::prefix('/search')->controller(SearchController::class)->group(function ()
     });
 });
 
+Route::prefix('/bookings')->controller(BookingsController::class)->group(function () {
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/{trip_id}', 'getBookingsForTrip');
+        Route::put('/{id}/confirm', 'confirmBooking');
+        Route::put('/{id}/cancel', 'cancelBooking');
+    });
+});
+
 Route::middleware('auth:api')->controller(NotificationsController::class)->group(function () {
     Route::get('/notifications', 'index');
+});
+
+Route::middleware('auth:api')->controller(CheckOutController::class)->group(function(){
+    Route::post('trip/checkout','checkOut');
 });
 

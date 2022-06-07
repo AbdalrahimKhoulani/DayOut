@@ -30,7 +30,11 @@ return new class extends Migration
     public function down()
     {
         Schema::table('promotion_requests', function (Blueprint $table) {
-            //
+            $table->longText('description')->nullable();
+        });
+
+        Schema::table('promotion_requests', function (Blueprint $table) {
+            $table->dropColumn('description');
         });
     }
 };

@@ -44,7 +44,8 @@ class User extends Authenticatable
     ];
 
     public function isAdmin(){
-        $adminRole = Role::where('name','=','Admin')->first();
+
+        $adminRole = Role::where('name','=','admin')->first();
 
         //  $b = in_array($adminRole,$user->roles );
 
@@ -55,6 +56,20 @@ class User extends Authenticatable
         }
 
         return $isAdmin;
+    }
+
+    public function isOrganizer(){
+
+
+        $organizerRole = Role::where('name','=','organizer')->first();
+
+        $isOrganizer= false;
+        foreach (Auth::user()->roles as $role) {
+            if($organizerRole->id==$role->id)
+                $isOrganizer = true;
+        }
+
+        return $isOrganizer;
     }
 
     public function verifiedAccount()
