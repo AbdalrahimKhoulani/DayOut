@@ -13,12 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('passengers', function (Blueprint $table) {
-            $table->id();
-//            $table->foreignId('customer_trip_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->unsignedBigInteger('customer_trip_id');
-            $table->string('passenger_name');
-            $table->timestamps();
+        Schema::table('customer_trips', function (Blueprint $table) {
+            $table->timestamp('confirmed_at')->nullable();
         });
     }
 
@@ -29,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('passengers');
+        Schema::table('customer_trips', function (Blueprint $table) {
+            $table->dropColumn('confirmed_at');
+        });
     }
 };

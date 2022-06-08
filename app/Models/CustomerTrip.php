@@ -12,7 +12,13 @@ class CustomerTrip extends Model
     protected $fillable = ['customer_id','trip_id','checkout','rate','rate_comment'];
     protected $dates = ['deleted_at'];
     protected $hidden = ['pivot','deleted_at'];
+    protected $casts = [
+        'confirmed_at' => 'datetime'
+    ];
 
+    public function confirmBooking(){
+        return $this->forceFill(['confirmed_at' => $this->freshTimestamp()])->save();
+    }
     public function passengers()
     {
         return $this->hasMany(Passenger::class);
@@ -23,7 +29,7 @@ class CustomerTrip extends Model
     }
     public function user()
     {
-        return $this->belongsTo(User::class,'customer_id');
+        return $this->belongsTo(User::class,'customer_id','id');
     }
 
 }

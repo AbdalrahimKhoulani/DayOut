@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('trip_id');
-            $table->boolean('checkout');
+//            $table->boolean('checkout');
             $table->decimal('rate')->nullable();
             $table->softDeletes();
             $table->timestamps();
