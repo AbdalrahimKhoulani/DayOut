@@ -18,6 +18,7 @@ use App\Models\PlaceTrip;
 use App\Models\TripPhoto;
 use App\Models\TripStatus;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Type\Integer;
@@ -615,7 +616,7 @@ class TripController extends BaseController
 
     public function beginTrip($id)
     {
-        $trip = Trip::with('organizer')->where('id',$id)->first();
+        $trip = Trip::with('organizer')->where('id', $id)->first();
 
         if ($trip == null) {
             error_log('This trip not found');
@@ -625,20 +626,20 @@ class TripController extends BaseController
 
         if ($trip->organizer->user_id != Auth::id()) {
             error_log('Unauthorized');
-            return $this->sendError('Unauthorized',[], 401);
+            return $this->sendError('Unauthorized', [], 401);
         }
 
-        $activeStatus = TripStatus::where('name','started')->first();
+        $activeStatus = TripStatus::where('name', 'started')->first();
 
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
-        return  $this->sendResponse($trip,'Trip started successfully');
+        return $this->sendResponse($trip, 'Trip started successfully');
     }
 
     public function endTrip($id)
     {
-        $trip = Trip::with('organizer')->where('id',$id)->first();
+        $trip = Trip::with('organizer')->where('id', $id)->first();
 
         if ($trip == null) {
             error_log('This trip not found');
@@ -647,15 +648,39 @@ class TripController extends BaseController
 
         if ($trip->organizer->user_id != Auth::id()) {
             error_log('Unauthorized');
-            return $this->sendError('Unauthorized',[], 401);
+            return $this->sendError('Unauthorized', [], 401);
         }
 
-        $activeStatus = TripStatus::where('name','ended')->first();
+        $activeStatus = TripStatus::where('name', 'ended')->first();
 
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
-        return  $this->sendResponse($trip,'Trip started successfully');
+        return $this->sendResponse($trip, 'Trip started successfully');
+    }
+
+    public function updatePlaceStatus($trip_id, $place_id){
+
+        Log::channel('requestlog')->info('Update place status request!', [
+            'trip_id' => $trip_id,
+            'place_id' => $place_id
+        ]);
+
+        $placeTrip = PlaceTrip::where('trip_id',$trip_id)->where('place_id',$place_id)->first();
+        if($placeTrip == null){
+            Log::channel('requestlog')->error('Trip or place does not exist!');
+            return $this->sendError('Trip or place does not exist!',404);
+        }elseif ($placeTrip->status == false){
+            $placeTrip->status = true;
+            $placeTrip->save();
+        }else{
+            $placeTrip->status = false;
+            $placeTrip->save();
+        }
+
+
+        Log::channel('requestlog')->info('Succeeded!');
+        return $this->sendResponse($placeTrip,'Succeeded!');
     }
 
 }

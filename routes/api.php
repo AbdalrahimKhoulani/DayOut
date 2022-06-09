@@ -40,6 +40,7 @@ Route::prefix('/place')->controller(PlaceController::class)->group(function () {
 
     Route::get('', 'index');
     Route::get('/popular/{id}', 'popularPlaces');
+    Route::get('/details/{place_id}','placeDetails');
 
     Route::get('/photo/{id}', 'placePhoto');
 
@@ -109,7 +110,7 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::put('/{id}/begin', 'beginTrip');
         Route::put('/{id}/end', 'endTrip');
 
-
+        Route::put('/place-status/update/{trip_id}/{place_id}','updatePlaceStatus');
 
     });
 });
