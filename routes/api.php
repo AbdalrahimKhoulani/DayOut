@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\PlaceController;
+use App\Http\Controllers\Api\PollController;
 use App\Http\Controllers\Api\RoadMapController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\TripController;
@@ -155,5 +156,14 @@ Route::middleware('auth:api')->controller(NotificationsController::class)->group
 
 Route::middleware('auth:api')->controller(CheckOutController::class)->group(function(){
     Route::post('trip/checkout','checkOut');
+});
+
+Route::prefix('/polls')->controller(PollController::class)->group(function (){
+
+    Route::get('','index');
+
+    Route::middleware('auth:api')->group(function (){
+        Route::post('/create','create');
+    });
 });
 
