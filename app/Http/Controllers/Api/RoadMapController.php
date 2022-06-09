@@ -19,7 +19,7 @@ class RoadMapController extends BaseController
             return $this->sendError('Trip does not exist!',404);
         }
 
-        $trip->load("placeTrips");
+        $trip->load('placeTrips.place');
 
         if(sizeof($trip->placeTrips) <= 0){
             Log::channel('requestlog')->error("Trip has no places!!");
