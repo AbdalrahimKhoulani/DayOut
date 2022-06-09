@@ -18,12 +18,12 @@ class Poll extends Model
 
     public function organizer()
     {
-        return $this->belongsTo(Organizer::class, 'organizer_id', 'id');
+        return $this->belongsTo(Organizer::class, 'organizer_id');
     }
 
     public function pollChoices()
     {
-        return $this->belongsTo(PollChoice::class, 'poll_id', 'id');
+        return $this->hasMany(PollChoice::class, 'poll_id', 'id');
     }
 
     public function users(){
