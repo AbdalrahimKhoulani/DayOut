@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\PlaceController;
+use App\Http\Controllers\Api\RoadMapController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
@@ -25,7 +26,6 @@ use App\Http\Controllers\Api\CheckOutController;
 |
 */
 
-//TODO: delete profile image for customer, trip rate value for customer
 
 
 Route::post('/notify', function (Request $request) {
@@ -110,9 +110,17 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::put('/{id}/end', 'endTrip');
 
 
+
     });
 });
 
+Route::prefix('/trip/road-map')->middleware('auth:api')
+    ->controller(RoadMapController::class)->group(function (){
+
+    Route::get('/{trip_id}','getRoadMapPlaces');
+
+
+});
 
 Route::prefix('/organizer')->controller(OrganizerController::class)->group(function () {
     Route::get('/profile/{id}', 'organizerProfile');

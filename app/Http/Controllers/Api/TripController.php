@@ -487,7 +487,7 @@ class TripController extends BaseController
         }
         $types = $request['types'];
         for ($i = 0; $i < sizeof($types); $i++) {
-            $trip->types()->attach($types[$i]['type_id']);
+            $trip->types()->attach($types[$i]['id']);
         }
         $trip->load(['tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
