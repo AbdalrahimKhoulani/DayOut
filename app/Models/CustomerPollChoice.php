@@ -9,5 +9,17 @@ class CustomerPollChoice extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['customer_id','poll_id','poll_choice_id'];
+    protected $fillable = ['user_id','poll_id','poll_choice_id'];
+
+    public function user(){
+        return $this->belongsTo(User::class,'user_id','id');
+    }
+
+    public function poll(){
+        return $this->belongsTo(Poll::class,'poll_id','id');
+    }
+
+    public function pollChoice(){
+        return $this->belongsTo(PollChoice::class,'poll_choice_id','id');
+    }
 }

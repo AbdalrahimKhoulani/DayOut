@@ -547,7 +547,6 @@ class TripController extends BaseController
         $customerTrip = new CustomerTrip();
         $customerTrip->trip()->associate($request['trip_id']);
         $customerTrip->user()->associate($id);
-        //$customerTrip->checkout = false;
         $customerTrip->save();
         if($request['passengers']!=null) {
             $passengers = $request['passengers'];
