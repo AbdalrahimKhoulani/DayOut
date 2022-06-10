@@ -16,10 +16,27 @@ class PollController extends BaseController
 
     public function index(){
         Log::channel('requestlog')->info('Get all polls request');
-        $polls = Poll::all();
+        $polls = Poll::all()->paginate(10);
         $polls->load('organizer');
-        $polls->load('pollChoices');
+        $polls->load('pollChoices.user');
         return $this->sendResponse($polls,'Succeeded!');
+    }
+
+    public function organizerPolls(){
+
+        Log::channel('requestlog')->info('Get organizer polls request!',['user_id',Auth::id()]);
+        if($this->getUserId() == null){
+            Log::channel('requestlog')->error('User is not organizer');
+            return $this->sendError('User is not organizer!!');
+        }
+        $polls = Poll::where('organizer_id',$this->getUserId())->with('pollChoices.users')->paginate(10);
+
+        if (sizeof($polls) <=0)
+            Log::channel('requestlog')->warning('Organizer has no polls!');
+
+        Log::channel('requestlog')->info('Get organizer polls request succeeded!');
+        return $this->sendResponse($polls,'Succeeded!');
+
     }
 
     public function create(PollRequest $request){
