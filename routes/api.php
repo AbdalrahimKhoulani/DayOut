@@ -164,6 +164,7 @@ Route::prefix('/polls')->controller(PollController::class)->group(function (){
 
     Route::middleware('auth:api')->group(function (){
         Route::post('/create','create');
+        Route::get('/organizer','organizerPolls');
     });
 });
 

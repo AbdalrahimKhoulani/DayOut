@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class CustomerTrip extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $fillable = ['customer_id','trip_id','checkout','rate','rate_comment'];
+    protected $fillable = ['customer_id','trip_id','confirmed_at','rate','rate_comment'];
     protected $dates = ['deleted_at'];
     protected $hidden = ['pivot','deleted_at'];
     protected $casts = [

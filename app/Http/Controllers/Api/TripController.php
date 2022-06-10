@@ -531,7 +531,6 @@ class TripController extends BaseController
 
         $validator = Validator::make($request->all(), [
             'trip_id' => 'required',
-            'passengers' => 'required'
         ]);
         if ($validator->fails()) {
             error_log($validator->errors());
@@ -544,17 +543,20 @@ class TripController extends BaseController
             error_log('User is the one that created the trip!');
             return $this->sendError('User is the one that created the trip!', [], 405);
         }
-        $passengers = $request['passengers'];
+
         $customerTrip = new CustomerTrip();
         $customerTrip->trip()->associate($request['trip_id']);
         $customerTrip->user()->associate($id);
-        $customerTrip->checkout = false;
+        //$customerTrip->checkout = false;
         $customerTrip->save();
-        for ($i = 0; $i < count($passengers); $i++) {
-            $passenger = new Passenger;
-            $passenger->passenger_name = $passengers[$i]['name'];
-            $passenger->customerTrip()->associate($customerTrip->id);
-            $passenger->save();
+        if($request['passengers']!=null) {
+            $passengers = $request['passengers'];
+            for ($i = 0; $i < count($passengers); $i++) {
+                $passenger = new Passenger;
+                $passenger->passenger_name = $passengers[$i]['name'];
+                $passenger->customerTrip()->associate($customerTrip->id);
+                $passenger->save();
+            }
         }
         error_log('book trip request succeeded!');
         return $this->sendResponse($customerTrip, 'Succeeded!');
