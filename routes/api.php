@@ -146,8 +146,9 @@ Route::prefix('/bookings')->controller(BookingsController::class)->group(functio
     Route::middleware('auth:api')->group(function () {
         Route::get('/{trip_id}', 'getBookingsForTrip');
        // Route::put('/{id}/confirm', 'confirmBooking');
-        Route::put('/{id}/cancel', 'cancelBooking');
+       // Route::put('/{id}/cancel', 'cancelBooking');
         Route::put('/{customer_id}/{trip_id}/confirm', 'confirmBooking');
+        Route::put('/{customer_id}/{trip_id}/cancel', 'cancelBooking');
 
     });
 });
