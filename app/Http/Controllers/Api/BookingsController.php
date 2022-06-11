@@ -111,8 +111,9 @@ class BookingsController extends BaseController
         return $this->sendResponse($booking,'This booking canceled successfully');
     }
 
-    public function cancelBooking($id){
+    public function cancelBookingByUser($id){
         $booking = CustomerTrip::find($id);
+
 
         if($booking == null){
             error_log('Booking not found');
@@ -122,10 +123,33 @@ class BookingsController extends BaseController
             error_log('Do not have permission to this booking');
             return $this->sendError('Do not have permission to this booking',401);
         }
+        if($booking->confirmed_at != null){
+            error_log('This booking is confirmed , Please see organizer');
+            return $this->sendError('This booking is confirmed , Please see organizer',401);
+        }
         $booking->delete();
 
 
         error_log('Booking canceled successfully');
+        return $this->sendResponse($booking,'Booking canceled successfully');
+    }
+
+    public function cancelBookingByOrganizer($id){
+        $booking = CustomerTrip::find($id);
+
+        if($booking == null){
+            error_log('Booking not found');
+            return $this->sendError('Booking with id : '.$id.' not found');
+        }
+        if($booking->trip->organizer->user_id != Auth::id()){
+            error_log('Do not have permission to this booking');
+            return $this->sendError('Do not have permission to this booking',401);
+        }
+        $booking->delete();
+
+
+        error_log('Booking canceled successfully');
+        $booking->makeHidden('trip');
         return $this->sendResponse($booking,'Booking canceled successfully');
     }
 }
