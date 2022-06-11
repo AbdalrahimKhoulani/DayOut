@@ -153,10 +153,11 @@ Route::prefix('/bookings')->controller(BookingsController::class)->group(functio
 
        // Route::put('/{id}/confirm', 'confirmBooking');
        // Route::put('/{id}/cancel', 'cancelBooking');
-        Route::put('/{customer_id}/{trip_id}/confirm', 'confirmBooking');
-        Route::put('/{customer_id}/{trip_id}/cancel', 'cancelConfirmBooking');
+        Route::put('/customer/{customer_id}/trip/{trip_id}/confirm', 'confirmBooking');
+        Route::put('/customer/{customer_id}/trip/{trip_id}/cancel', 'cancelConfirmBooking');
 
-        Route::put('/{id}/user/cancel', 'cancelBooking');
+        Route::put('/{id}/user/cancel', 'cancelBookingByUser');
+        Route::put('/{id}/organizer/cancel', 'cancelBookingByOrganizer');
 
     });
 });
