@@ -145,8 +145,10 @@ Route::prefix('/search')->controller(SearchController::class)->group(function ()
 Route::prefix('/bookings')->controller(BookingsController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
         Route::get('/{trip_id}', 'getBookingsForTrip');
-        Route::put('/{id}/confirm', 'confirmBooking');
+       // Route::put('/{id}/confirm', 'confirmBooking');
         Route::put('/{id}/cancel', 'cancelBooking');
+        Route::put('/{customer_id}/{trip_id}/confirm', 'confirmBooking');
+
     });
 });
 
