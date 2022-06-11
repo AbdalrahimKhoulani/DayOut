@@ -32,7 +32,17 @@ class CheckOutController extends BaseController
             return $this->sendError('Unauthorized',[], 401);
         }
 
+
+
         $passengers_ids = $request['passengers_ids'];
+
+        $passengers = Passenger::with('customerTrip')->whereNotIn('id', $passengers_ids)->get();
+        foreach ($passengers as $passenger) {
+            if ($passenger->customerTrip->trip_id == $trip_id) {
+                $passenger->checkout = false;
+                $passenger->save();
+            }
+        }
         $passengers = Passenger::with('customerTrip')->whereIn('id', $passengers_ids)->get();
         foreach ($passengers as $passenger) {
             if ($passenger->customerTrip->trip_id == $trip_id) {

@@ -531,6 +531,7 @@ class TripController extends BaseController
 
         $validator = Validator::make($request->all(), [
             'trip_id' => 'required',
+            'passengers' => 'required'
         ]);
         if ($validator->fails()) {
             error_log($validator->errors());
@@ -657,7 +658,7 @@ class TripController extends BaseController
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
-        return $this->sendResponse($trip, 'Trip started successfully');
+        return  $this->sendResponse($trip,'Trip ended successfully');
     }
 
     public function updatePlaceStatus($trip_id, $place_id){
