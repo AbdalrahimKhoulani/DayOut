@@ -109,7 +109,6 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::put('/edit/places', 'editTripPlaces');
         Route::put('/edit/types/{id}', 'editTripTypes');
 
-        Route::post('/book', 'bookTrip');
         Route::post('/rate', 'rateTrip');
 
         Route::put('/{id}/begin', 'beginTrip');
@@ -158,6 +157,7 @@ Route::prefix('/bookings')->controller(BookingsController::class)->group(functio
 
         Route::put('/{id}/user/cancel', 'cancelBookingByUser');
         Route::put('/{id}/organizer/cancel', 'cancelBookingByOrganizer');
+        Route::post('/book', 'bookTrip');
 
     });
 });
