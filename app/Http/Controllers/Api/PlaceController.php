@@ -87,4 +87,6 @@ class PlaceController extends BaseController
         return imagejpeg($image);
     }
 
+
+
 }

@@ -655,7 +655,7 @@ class TripController extends BaseController
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
-        return  $this->sendResponse($trip,'Trip started successfully');
+        return  $this->sendResponse($trip,'Trip ended successfully');
     }
 
 }

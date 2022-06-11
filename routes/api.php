@@ -6,12 +6,16 @@ use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\NotificationsController;
 use App\Http\Controllers\Api\OrganizerController;
+use App\Models\Place;
 use App\Models\User;
+use App\Models\UserReport;
 use App\Services\FCM;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\BookingsController;
 use App\Http\Controllers\Api\CheckOutController;
+use Illuminate\Support\Facades\Validator;
 
 
 /*
@@ -26,6 +30,41 @@ use App\Http\Controllers\Api\CheckOutController;
 */
 
 //TODO: delete profile image for customer, trip rate value for customer
+
+
+Route::get('place/{id}/show', function ($id) {
+    $place = Place::with('photos')->where('id', $id)->first();
+    if ($place == null) {
+        error_log('Place with id : ' . $id . ' not found');
+        return 'Place with id ' . $id . ' not found';
+    }
+    error_log('Place with id : ' . $id . ' retrieved successfully');
+    return $place;
+});
+
+Route::middleware('auth:api')->post('user/report', function (Request $request) {
+
+    if (Auth::id() == null)
+        error_log('Auth::user()');
+
+    $validator = Validator::make($request->all(), [
+        'target_id' => 'required',
+        'report' => 'required'
+    ]);
+
+    if ($validator->fails()) {
+        return $validator->errors();
+    }
+
+    $userReport = new UserReport();
+    $userReport->reporter_id = Auth::id();
+    $userReport->target_id = $request['target_id'];
+    $userReport->report = $request['report'];
+    $userReport->save();
+
+    error_log('Reported successfully');
+    return $userReport;
+});
 
 
 Route::post('/notify', function (Request $request) {
@@ -134,7 +173,8 @@ Route::prefix('/search')->controller(SearchController::class)->group(function ()
 
 Route::prefix('/bookings')->controller(BookingsController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
-        Route::get('/{trip_id}', 'getBookingsForTrip');
+        Route::get('/trip/{trip_id}', 'getBookingsForTrip');
+        Route::get('/trip/{trip_id}/passengers', 'getPassengersForTrip');
         Route::put('/{id}/confirm', 'confirmBooking');
         Route::put('/{id}/cancel', 'cancelBooking');
     });
@@ -144,7 +184,7 @@ Route::middleware('auth:api')->controller(NotificationsController::class)->group
     Route::get('/notifications', 'index');
 });
 
-Route::middleware('auth:api')->controller(CheckOutController::class)->group(function(){
-    Route::post('trip/checkout','checkOut');
+Route::middleware('auth:api')->controller(CheckOutController::class)->group(function () {
+    Route::post('trip/checkout', 'checkOut');
 });
 
