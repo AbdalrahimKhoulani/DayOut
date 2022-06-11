@@ -150,10 +150,13 @@ Route::prefix('/bookings')->controller(BookingsController::class)->group(functio
     Route::middleware('auth:api')->group(function () {
         Route::get('/trip/{trip_id}', 'getBookingsForTrip');
         Route::get('/trip/{trip_id}/passengers', 'getPassengersForTrip');
+
        // Route::put('/{id}/confirm', 'confirmBooking');
        // Route::put('/{id}/cancel', 'cancelBooking');
         Route::put('/{customer_id}/{trip_id}/confirm', 'confirmBooking');
-        Route::put('/{customer_id}/{trip_id}/cancel', 'cancelBooking');
+        Route::put('/{customer_id}/{trip_id}/cancel', 'cancelConfirmBooking');
+
+        Route::put('/{id}/user/cancel', 'cancelBooking');
 
     });
 });
