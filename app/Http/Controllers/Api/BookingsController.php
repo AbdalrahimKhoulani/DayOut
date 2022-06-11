@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class BookingsController extends BaseController
 {
@@ -21,6 +22,31 @@ class BookingsController extends BaseController
      * $customers = User::whereIn('id',Organizer::select(['user_id'])->get(['user_id']))
      * ->paginate(10);
      */
+
+    public function getPassengersForTrip($trip_id)
+    {
+
+        $trip = Trip::find($trip_id);
+        if ($trip == null) {
+            error_log('This trip is not found');
+            return $this->sendError('This trip is not found');
+        }
+
+        $passengers = DB::table('customer_trips')
+            ->join('passengers','customer_trips.id','=','passengers.customer_trip_id')
+            ->where('customer_trips.trip_id',$trip_id)
+            ->select('passengers.*')->get();
+
+
+        if (count($passengers) == 0) {
+            error_log('This trip has no passengers');
+            return $this->sendError('This trip has no passengers');
+        }
+        error_log('Passengers list returned successfully');
+
+        return $this->sendResponse($passengers, 'Passengers list returned successfully');
+    }
+
     public function getBookingsForTrip($trip_id)
     {
 
@@ -62,7 +88,7 @@ class BookingsController extends BaseController
         return $this->sendResponse($booking, 'This booking confirmed successfully');
     }
 
-    public function cancelBooking($customerId,$tripId)
+    public function cancelConfirmBooking($customerId,$tripId)
     {
         $booking = CustomerTrip::with(['user','passengers'])->where('customer_Id',$customerId)->where('trip_id',$tripId)->first();
         //$booking = CustomerTrip::with(['user', 'passengers'])->where('id', $id)->first();
@@ -134,4 +160,46 @@ class BookingsController extends BaseController
         return $this->sendResponse($customerTrip, 'Succeeded!');
     }
 
+
+    public function cancelBookingByUser($id){
+        $booking = CustomerTrip::find($id);
+
+
+        if($booking == null){
+            error_log('Booking not found');
+            return $this->sendError('Booking with id : '.$id.' not found');
+        }
+        if($booking->customer_id!= Auth::id()){
+            error_log('Do not have permission to this booking');
+            return $this->sendError('Do not have permission to this booking',401);
+        }
+        if($booking->confirmed_at != null){
+            error_log('This booking is confirmed , Please see organizer');
+            return $this->sendError('This booking is confirmed , Please see organizer',401);
+        }
+        $booking->delete();
+
+
+        error_log('Booking canceled successfully');
+        return $this->sendResponse($booking,'Booking canceled successfully');
+    }
+
+    public function cancelBookingByOrganizer($id){
+        $booking = CustomerTrip::find($id);
+
+        if($booking == null){
+            error_log('Booking not found');
+            return $this->sendError('Booking with id : '.$id.' not found');
+        }
+        if($booking->trip->organizer->user_id != Auth::id()){
+            error_log('Do not have permission to this booking');
+            return $this->sendError('Do not have permission to this booking',401);
+        }
+        $booking->delete();
+
+
+        error_log('Booking canceled successfully');
+        $booking->makeHidden('trip');
+        return $this->sendResponse($booking,'Booking canceled successfully');
+    }
 }

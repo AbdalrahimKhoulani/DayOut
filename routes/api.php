@@ -8,12 +8,16 @@ use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\NotificationsController;
 use App\Http\Controllers\Api\OrganizerController;
+use App\Models\Place;
 use App\Models\User;
+use App\Models\UserReport;
 use App\Services\FCM;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\BookingsController;
 use App\Http\Controllers\Api\CheckOutController;
+use Illuminate\Support\Facades\Validator;
 
 
 /*
@@ -143,13 +147,17 @@ Route::prefix('/search')->controller(SearchController::class)->group(function ()
 
 Route::prefix('/bookings')->controller(BookingsController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
-        Route::get('/{trip_id}', 'getBookingsForTrip');
+        Route::get('/trip/{trip_id}', 'getBookingsForTrip');
+        Route::get('/trip/{trip_id}/passengers', 'getPassengersForTrip');
+
        // Route::put('/{id}/confirm', 'confirmBooking');
        // Route::put('/{id}/cancel', 'cancelBooking');
-        Route::put('/{customer_id}/{trip_id}/confirm', 'confirmBooking');
-        Route::put('/{customer_id}/{trip_id}/cancel', 'cancelBooking');
-        Route::post('/book', 'bookTrip');
+        Route::put('/customer/{customer_id}/trip/{trip_id}/confirm', 'confirmBooking');
+        Route::put('/customer/{customer_id}/trip/{trip_id}/cancel', 'cancelConfirmBooking');
 
+        Route::put('/{id}/user/cancel', 'cancelBookingByUser');
+        Route::put('/{id}/organizer/cancel', 'cancelBookingByOrganizer');
+        Route::post('/book', 'bookTrip');
 
     });
 });
