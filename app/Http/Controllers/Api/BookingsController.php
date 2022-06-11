@@ -86,9 +86,10 @@ class BookingsController extends BaseController
         return $this->sendResponse($booking, 'This booking confirmed successfully');
     }
 
-    public function cancelBooking($id)
+    public function cancelBooking($customerId,$tripId)
     {
-        $booking = CustomerTrip::with(['user', 'passengers'])->where('id', $id)->first();
+        $booking = CustomerTrip::with(['user','passengers'])->where('customer_Id',$customerId)->where('trip_id',$tripId)->first();
+        //$booking = CustomerTrip::with(['user', 'passengers'])->where('id', $id)->first();
         if ($booking == null) {
             error_log('This booking not found');
             return $this->sendError('This booking not found');
