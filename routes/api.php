@@ -33,41 +33,6 @@ use Illuminate\Support\Facades\Validator;
 
 
 
-Route::get('place/{id}/show', function ($id) {
-    $place = Place::with('photos')->where('id', $id)->first();
-    if ($place == null) {
-        error_log('Place with id : ' . $id . ' not found');
-        return 'Place with id ' . $id . ' not found';
-    }
-    error_log('Place with id : ' . $id . ' retrieved successfully');
-    return $place;
-});
-
-Route::middleware('auth:api')->post('user/report', function (Request $request) {
-
-    if (Auth::id() == null)
-        error_log('Auth::user()');
-
-    $validator = Validator::make($request->all(), [
-        'target_id' => 'required',
-        'report' => 'required'
-    ]);
-
-    if ($validator->fails()) {
-        return $validator->errors();
-    }
-
-    $userReport = new UserReport();
-    $userReport->reporter_id = Auth::id();
-    $userReport->target_id = $request['target_id'];
-    $userReport->report = $request['report'];
-    $userReport->save();
-
-    error_log('Reported successfully');
-    return $userReport;
-});
-
-
 Route::post('/notify', function (Request $request) {
 
     $user = User::where('id', $request['user_id'])->get();
