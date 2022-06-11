@@ -149,7 +149,7 @@ class BookingsController extends BaseController
 
 
         error_log('Booking canceled successfully');
-        $booking->makeHidden('trip'   );
+        $booking->makeHidden('trip');
         return $this->sendResponse($booking,'Booking canceled successfully');
     }
 }
