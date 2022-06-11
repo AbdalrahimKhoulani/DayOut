@@ -83,7 +83,7 @@ class BookingsController extends BaseController
         return $this->sendResponse($booking, 'This booking confirmed successfully');
     }
 
-    public function cancelBooking($id)
+    public function cancelConfirmBooking($id)
     {
         $booking = CustomerTrip::with(['user', 'passengers'])->where('id', $id)->first();
         if ($booking == null) {
@@ -105,5 +105,23 @@ class BookingsController extends BaseController
         $booking->save();
 
         return $this->sendResponse($booking,'This booking canceled successfully');
+    }
+
+    public function cancelBooking($id){
+        $booking = CustomerTrip::find($id);
+
+        if($booking == null){
+            error_log('Booking not found');
+            return $this->sendError('Booking with id : '.$id.' not found');
+        }
+        if($booking->customer_id!= Auth::id()){
+            error_log('Do not have permission to this booking');
+            return $this->sendError('Do not have permission to this booking',401);
+        }
+        $booking->delete();
+
+
+        error_log('Booking canceled successfully');
+        return $this->sendResponse($booking,'Booking canceled successfully');
     }
 }
