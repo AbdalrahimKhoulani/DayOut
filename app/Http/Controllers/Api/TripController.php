@@ -519,47 +519,6 @@ class TripController extends BaseController
         return $this->sendResponse($trip, 'Succeeded!');
     }
 
-    public function bookTrip(Request $request)
-    {
-        error_log('Book trip request!');
-        $id = Auth::id();
-        $user = User::find($id);
-        if ($user == null) {
-            error_log('User not found!');
-            return $this->sendError('User not found!');
-        }
-
-        $validator = Validator::make($request->all(), [
-            'trip_id' => 'required',
-        ]);
-        if ($validator->fails()) {
-            error_log($validator->errors());
-            return $this->sendError('Validator failed! check the data', $validator->errors());
-        }
-        $trip = Trip::find($request['trip_id'])->with(['organizer' => function ($query) use ($id) {
-            $query->where('user_id', $id);
-        }])->first();
-        if ($trip->organizer != null) {
-            error_log('User is the one that created the trip!');
-            return $this->sendError('User is the one that created the trip!', [], 405);
-        }
-
-        $customerTrip = new CustomerTrip();
-        $customerTrip->trip()->associate($request['trip_id']);
-        $customerTrip->user()->associate($id);
-        $customerTrip->save();
-        if($request['passengers']!=null) {
-            $passengers = $request['passengers'];
-            for ($i = 0; $i < count($passengers); $i++) {
-                $passenger = new Passenger;
-                $passenger->passenger_name = $passengers[$i]['name'];
-                $passenger->customerTrip()->associate($customerTrip->id);
-                $passenger->save();
-            }
-        }
-        error_log('book trip request succeeded!');
-        return $this->sendResponse($customerTrip, 'Succeeded!');
-    }
 
     public function rateTrip(Request $request)
     {
