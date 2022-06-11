@@ -25,7 +25,7 @@ class Trip extends Model
     }
     public function  placeTrips()
     {
-        return $this->hasMany(PlaceTrip::class);
+        return $this->hasMany(PlaceTrip::class)->orderBy('order');
     }
     public function tripPhotos()
     {

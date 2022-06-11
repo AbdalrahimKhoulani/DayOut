@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use  App\Http\Controllers\Api\BaseController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\Passport;
 use function PHPUnit\Framework\isEmpty;
@@ -87,6 +88,20 @@ class PlaceController extends BaseController
         return imagejpeg($image);
     }
 
+    public function placeDetails($id){
+        Log::channel('requestlog')->info('Get place details',['place_id' => $id]);
 
+        $place = Place::find($id);
+
+        if($place == null){
+            Log::channel('requestlog')->error('Place does not exist!');
+            return $this->sendError('Place does not exist!',404);
+        }
+
+        $place->load(['photos','type']);
+
+        Log::channel('requestlog')->info('Get place details request succeeded!!');
+        return $this->sendResponse($place,'Succeeded!');
+    }
 
 }

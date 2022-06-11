@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\PlaceController;
+use App\Http\Controllers\Api\PollController;
+use App\Http\Controllers\Api\RoadMapController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
@@ -29,7 +31,6 @@ use Illuminate\Support\Facades\Validator;
 |
 */
 
-//TODO: delete profile image for customer, trip rate value for customer
 
 
 Route::get('place/{id}/show', function ($id) {
@@ -79,6 +80,7 @@ Route::prefix('/place')->controller(PlaceController::class)->group(function () {
 
     Route::get('', 'index');
     Route::get('/popular/{id}', 'popularPlaces');
+    Route::get('/details/{place_id}','placeDetails');
 
     Route::get('/photo/{id}', 'placePhoto');
 
@@ -148,10 +150,18 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::put('/{id}/begin', 'beginTrip');
         Route::put('/{id}/end', 'endTrip');
 
+        Route::put('/place-status/update/{trip_id}/{place_id}','updatePlaceStatus');
 
     });
 });
 
+Route::prefix('/trip/road-map')->middleware('auth:api')
+    ->controller(RoadMapController::class)->group(function (){
+
+    Route::get('/{trip_id}','getRoadMapPlaces');
+
+
+});
 
 Route::prefix('/organizer')->controller(OrganizerController::class)->group(function () {
     Route::get('/profile/{id}', 'organizerProfile');
@@ -186,5 +196,16 @@ Route::middleware('auth:api')->controller(NotificationsController::class)->group
 
 Route::middleware('auth:api')->controller(CheckOutController::class)->group(function () {
     Route::post('trip/checkout', 'checkOut');
+});
+
+Route::prefix('/polls')->controller(PollController::class)->group(function (){
+
+    Route::get('','index');
+
+    Route::middleware('auth:api')->group(function (){
+        Route::post('/create','create');
+        Route::get('/organizer','organizerPolls');
+        Route::put('/vote/{poll_id}/{poll_choice_id}','vote');
+    });
 });
 
