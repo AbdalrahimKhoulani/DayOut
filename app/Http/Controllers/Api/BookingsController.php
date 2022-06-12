@@ -142,13 +142,8 @@ class BookingsController extends BaseController
         $customerTrip->trip()->associate($request['trip_id']);
         $customerTrip->user()->associate($id);
         $customerTrip->save();
-        $customerPassenger = new Passenger();
-        $customerPassenger->passenger_name= $user->first_name;
-        $customerPassenger->customerTrip()->associate($customerTrip->id);
-        $customerPassenger->save();
         if($request['passengers']!=null) {
             $passengers = $request['passengers'];
-
             for ($i = 0; $i < count($passengers); $i++) {
                 $passenger = new Passenger;
                 $passenger->passenger_name = $passengers[$i]['name'];
