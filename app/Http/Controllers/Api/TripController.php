@@ -137,6 +137,9 @@ class TripController extends BaseController
         } else {
             $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])->
             withCount('customerTrips')->
+                with('customerTrips',function ($query) use ($id) {
+                    $query->where('customer_id',$id);
+            })->
             whereHas('customerTrips', function ($query) use ($id) {
                 $query->where('customer_id', $id);
             }, '!=', 0)->
