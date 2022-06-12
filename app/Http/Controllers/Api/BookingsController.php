@@ -10,6 +10,7 @@ use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
@@ -130,6 +131,10 @@ class BookingsController extends BaseController
             error_log($validator->errors());
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
+        if($this->isInTrip(Auth::id(),$request['trip_id'])){
+            $this->sendErrorToLog('User already booked this trip',[]);
+            return $this->sendError('User already booked this trip',406);
+        }
         $trip = Trip::find($request['trip_id'])->with(['organizer' => function ($query) use ($id) {
             $query->where('user_id', $id);
         }])->first();
@@ -156,13 +161,14 @@ class BookingsController extends BaseController
     }
 
 
-    public function cancelBookingByUser($id){
-        $booking = CustomerTrip::find($id);
+    public function cancelBookingByUser($tripId){
+        $booking = CustomerTrip::where('customer_Id',Auth::id())->where('trip_id',$tripId)->first();
+
 
 
         if($booking == null){
             error_log('Booking not found');
-            return $this->sendError('Booking with id : '.$id.' not found');
+            return $this->sendError('Booking with id : '.$tripId.' not found');
         }
         if($booking->customer_id!= Auth::id()){
             error_log('Do not have permission to this booking');
@@ -196,5 +202,25 @@ class BookingsController extends BaseController
         error_log('Booking canceled successfully');
         $booking->makeHidden('trip');
         return $this->sendResponse($booking,'Booking canceled successfully');
+    }
+
+    public function isInTrip($customerId,$tripId){
+
+        $customerTrip = CustomerTrip::where('customer_id',$customerId)->where('trip_id',$tripId)->first();
+
+        if ($customerTrip != null){
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+    private function sendInfoToLog($message,$context){
+        Log::channel('requestlog')->info($message,$context);
+    }
+
+    private function sendErrorToLog($message,$context){
+        Log::channel('requestlog')->error($message,$context);
+
     }
 }
