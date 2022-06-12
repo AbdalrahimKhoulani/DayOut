@@ -155,7 +155,7 @@ Route::prefix('/bookings')->controller(BookingsController::class)->group(functio
         Route::put('/customer/{customer_id}/trip/{trip_id}/confirm', 'confirmBooking');
         Route::put('/customer/{customer_id}/trip/{trip_id}/cancel', 'cancelConfirmBooking');
 
-        Route::put('{trip_id}/user/cancel', 'cancelBookingByUser');
+        Route::put('/{trip_id}/user/cancel', 'cancelBookingByUser');
         Route::put('/{id}/organizer/cancel', 'cancelBookingByOrganizer');
         Route::post('/book', 'bookTrip');
 
