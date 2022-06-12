@@ -10,6 +10,7 @@ use App\Models\Trip;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
+use http\Header;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -499,7 +500,7 @@ class TripController extends BaseController
         return $this->sendResponse($trip, 'Succeeded!');
     }
 
-    public function getTripDetails($id)
+    public function getTripDetails(Request $request,$id)
     {
         error_log('Get trip details!');
 
@@ -515,6 +516,8 @@ class TripController extends BaseController
             error_log('Trip not found!');
             return $this->sendError('Trip not found!');
         }
+        $bookingController = new BookingsController();
+        $trip['is_in_trip'] = $bookingController->isInTrip(Auth::guard('api')->id(),$trip->id);
         error_log('Get trip details succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
     }

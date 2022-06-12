@@ -81,7 +81,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 Route::prefix('/trip')->controller(TripController::class)->group(function () {
 
     Route::get('', 'getTrips');
-    Route::get('/{id}/details', 'getTripDetails');
+    Route::get('/{id}/details','getTripDetails');
     Route::get('/types', 'getTypes');
 
     Route::get('/photo/{id}/base64', 'tripPhotoAsBase64');
@@ -155,7 +155,7 @@ Route::prefix('/bookings')->controller(BookingsController::class)->group(functio
         Route::put('/customer/{customer_id}/trip/{trip_id}/confirm', 'confirmBooking');
         Route::put('/customer/{customer_id}/trip/{trip_id}/cancel', 'cancelConfirmBooking');
 
-        Route::put('/{id}/user/cancel', 'cancelBookingByUser');
+        Route::put('{trip_id}/user/cancel', 'cancelBookingByUser');
         Route::put('/{id}/organizer/cancel', 'cancelBookingByOrganizer');
         Route::post('/book', 'bookTrip');
 
