@@ -147,6 +147,8 @@ class TripController extends BaseController
                 ->with(['placeTrips' => function ($query) {
                     $query->with('place');
                 }, 'tripPhotos'])->get();
+
+
         }
 
 
@@ -503,9 +505,33 @@ class TripController extends BaseController
         return $this->sendResponse($trip, 'Succeeded!');
     }
 
-    public function getTripDetails(Request $request,$id)
+    public function getTripDetails($id)
     {
         error_log('Get trip details!');
+
+        $trip = Trip::where('id', $id)
+            ->with(['types', 'customerTrips' => function ($query) {
+                return $query->where('customer_id',Auth::guard('api')->id())->with('user');
+            }, 'placeTrips' => function ($query) {
+                $query->with('place');
+            }, 'tripPhotos' => function ($query) {
+                $query->select(['id', 'trip_id']);
+            }])->first();
+        if ($trip == null) {
+            error_log('Trip not found!');
+            return $this->sendError('Trip not found!');
+        }
+        $bookingController = new BookingsController();
+        $trip['is_in_trip'] = $bookingController->isInTrip(Auth::guard('api')->id(),$trip->id);
+
+        error_log('Get trip details succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
+    }
+
+    public function getTripDetailsOrganizer($id){
+
+        error_log('Get trip details organizer!');
+
 
         $trip = Trip::where('id', $id)
             ->with(['types', 'customerTrips' => function ($query) {
@@ -521,10 +547,10 @@ class TripController extends BaseController
         }
         $bookingController = new BookingsController();
         $trip['is_in_trip'] = $bookingController->isInTrip(Auth::guard('api')->id(),$trip->id);
-        error_log('Get trip details succeeded!');
+
+        error_log('Get trip details organizer succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
     }
-
 
     public function rateTrip(Request $request)
     {
@@ -647,6 +673,13 @@ class TripController extends BaseController
 
         Log::channel('requestlog')->info('Succeeded!');
         return $this->sendResponse($placeTrip,'Succeeded!');
+    }
+
+    private function getOrganizerId(){
+        $organizer = Organizer::where('user_id',Auth::id())->first();
+        if($organizer == null)
+            return null;
+        return $organizer->id;
     }
 
 }
