@@ -521,7 +521,8 @@ class TripController extends BaseController
         }
         $bookingController = new BookingsController();
         $trip['is_in_trip'] = $bookingController->isInTrip(Auth::guard('api')->id(),$trip->id);
-        $trip['customerTrips'] = CustomerTrip::where('customer_id',Auth::guard('api')->id())->with('user')->first();
+        $trip['customerTrips'] = CustomerTrip::where('customer_id',Auth::guard('api')->id())
+            ->where('trip_id',$trip->id)->with('user')->first();
         error_log('Get trip details succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
     }
