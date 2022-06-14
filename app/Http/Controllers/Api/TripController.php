@@ -534,7 +534,7 @@ class TripController extends BaseController
 
         $trip = Trip::where('id', $id)
             ->with(['types', 'customerTrips' => function ($query) {
-                return $query->with('user');
+                return $query->with('user')->with('passengers');
             }, 'placeTrips' => function ($query) {
                 $query->with('place');
             }, 'tripPhotos' => function ($query) {
