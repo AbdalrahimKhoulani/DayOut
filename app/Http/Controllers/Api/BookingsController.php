@@ -133,7 +133,7 @@ class BookingsController extends BaseController
         }
         if($this->isInTrip(Auth::id(),$request['trip_id'])){
             $this->sendErrorToLog('User already booked this trip',[]);
-            return $this->sendError('User already booked this trip',406);
+            return $this->sendError('User already booked this trip',[],406);
         }
         $trip = Trip::find($request['trip_id'])->with(['organizer' => function ($query) use ($id) {
             $query->where('user_id', $id);
@@ -172,11 +172,11 @@ class BookingsController extends BaseController
         }
         if($booking->customer_id!= Auth::id()){
             error_log('Do not have permission to this booking');
-            return $this->sendError('Do not have permission to this booking',401);
+            return $this->sendError('Do not have permission to this booking',[],401);
         }
         if($booking->confirmed_at != null){
             error_log('This booking is confirmed , Please see organizer');
-            return $this->sendError('This booking is confirmed , Please see organizer',401);
+            return $this->sendError('This booking is confirmed , Please see organizer',[],401);
         }
         $booking->delete();
 
@@ -194,7 +194,7 @@ class BookingsController extends BaseController
         }
         if($booking->trip->organizer->user_id != Auth::id()){
             error_log('Do not have permission to this booking');
-            return $this->sendError('Do not have permission to this booking',401);
+            return $this->sendError('Do not have permission to this booking',[],401);
         }
         $booking->delete();
 
