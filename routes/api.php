@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\FavoritesController;
+use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\PlaceController;
 use App\Http\Controllers\Api\PollController;
 use App\Http\Controllers\Api\RoadMapController;
@@ -51,6 +53,7 @@ Route::prefix('/place')->controller(PlaceController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
         Route::get('/favorite/{userId}/{placeId}', 'isFavorite');
         Route::post('/favorite', 'favorite');
+        Route::post('/suggest','suggestPlace');
     });
 });
 
@@ -185,3 +188,13 @@ Route::prefix('/polls')->controller(PollController::class)->group(function () {
     });
 });
 
+Route::prefix('/favorites')->middleware('auth:api')->controller(FavoritesController::class)->group(function (){
+
+    Route::get('/places','getFavoritePlaces');
+
+});
+
+Route::prefix('/followers')->middleware('auth:api')->controller(FollowController::class)->group(function(){
+    Route::put('/follow/{organizer_user_id}','followOrganizer');
+    Route::get('','getFollowedOrganizers');
+});

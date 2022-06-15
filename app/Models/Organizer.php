@@ -18,7 +18,7 @@ class Organizer extends Model
 
     public function followers()
     {
-        return $this->belongsToMany(User::class, 'followers', 'organizer_id', 'user_id');
+        return $this->belongsToMany(User::class, 'followers', 'organizer_id', 'user_id')->withTimestamps();
     }
 
     public function placeSuggestion(){
