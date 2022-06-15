@@ -70,7 +70,7 @@ class TripController extends BaseController
                 ->where('expire_date', '>', Carbon::now())
                 ->with(['types', 'placeTrips' => function ($query) {
                     $query->with('place');
-                }, 'tripPhotos'])->get();
+                }, 'tripPhotos'])->where('trip_status_id',1)->get();
         } else {
             $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
                 ->whereHas('customerTrips', function ($query) use ($id) {

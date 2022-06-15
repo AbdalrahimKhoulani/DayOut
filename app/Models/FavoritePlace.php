@@ -9,6 +9,8 @@ class FavoritePlace extends Model
 {
     use HasFactory;
     protected $fillable = ['user_id','place_id'];
+    protected $table = 'favorite_places';
+
 
     public function user()
     {

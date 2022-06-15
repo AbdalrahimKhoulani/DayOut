@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\PlaceSuggestionRequest;
 use App\Models\FavoritePlace;
+use App\Models\Organizer;
 use App\Models\Place;
+use App\Models\PlaceSuggestion;
 use App\Models\PlaceType;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -102,6 +105,37 @@ class PlaceController extends BaseController
 
         Log::channel('requestlog')->info('Get place details request succeeded!!');
         return $this->sendResponse($place,'Succeeded!');
+    }
+
+    public function suggestPlace(PlaceSuggestionRequest $request){
+
+        $this->sendInfoToLog('Suggest place request',['user_id' => Auth::id()]);
+        $organizerId = $this->getOrganizerId(Auth::id());
+
+        $placeSuggestion = new PlaceSuggestion();
+        $placeSuggestion->organizer()->associate($organizerId);
+        $placeSuggestion->place_name = $request['place_name'];
+        $placeSuggestion->place_address = $request['place_address'];
+        $placeSuggestion->description = $request['description'];
+        $placeSuggestion->save();
+
+        $this->sendInfoToLog('Suggest place request succeeded!',[$placeSuggestion]);
+        return $this->sendResponse($placeSuggestion,'Suggest place request succeeded!');
+    }
+    private function getOrganizerId($id){
+        $organizer = Organizer::where('user_id',$id)->first();
+        if($organizer == null)
+            return null;
+        return $organizer->id;
+    }
+
+    private function sendInfoToLog($message,$context){
+        Log::channel('requestlog')->info($message,$context);
+    }
+
+    private function sendErrorToLog($message,$context){
+        Log::channel('requestlog')->error($message,$context);
+
     }
 
 }

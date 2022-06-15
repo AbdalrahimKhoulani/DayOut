@@ -109,7 +109,7 @@ class User extends Authenticatable
 
     public function organizerFollow()
     {
-        return $this->belongsToMany(Organizer::class, 'followers', 'user_id', 'organizer_id');
+        return $this->belongsToMany(Organizer::class, 'followers', 'user_id', 'organizer_id')->withTimestamps();
     }
 
     public function pollChoices()

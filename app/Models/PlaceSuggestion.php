@@ -13,7 +13,7 @@ class PlaceSuggestion extends Model
 
     protected $dates = ['deleted_at'];
 
-    protected $fillable = ['organizer_id','place_name','place_address'];
+    protected $fillable = ['organizer_id','place_name','place_address','description'];
 
     public function organizer(){
         return $this->belongsTo(Organizer::class,'organizer_id','id');
