@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Api\BaseController;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 
 class CheckOutController extends BaseController
 {
@@ -20,7 +20,11 @@ class CheckOutController extends BaseController
             'passengers_ids' => 'required'
         ]);
 
-        $this->validatorCheck($validator);
+        if($validator->fails()){
+            $this->sendErrorToLog('Validator failed',[$validator->errors()]);
+            return $this->sendError('Validator failed',$validator->errors());
+        }
+
 
 
         $trip_id = $request['trip_id'];
@@ -67,13 +71,5 @@ class CheckOutController extends BaseController
 
     }
 
-    public function validatorCheck(Validator $validator){
 
-        if($validator->fails()){
-            $this->sendErrorToLog('Validator failed',[$validator->errors()]);
-            return false;
-        }
-        else
-            return true;
-    }
 }
