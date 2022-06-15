@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\WebUI\PromotionController;
+use App\Http\Controllers\WebUI\ReportController;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserRole;
@@ -44,7 +46,10 @@ Route::get('/logout','WebUI\LogoutController@logout')->name('logout.perform');
 /***
  * place
  */
-Route::prefix('/place')->middleware(['auth','checkAdmin'])->controller('WebUI\PlaceController')->group(function (){
+Route::prefix('/place')
+    ->middleware(['auth','checkAdmin'])
+    ->controller('WebUI\PlaceController')
+    ->group(function (){
     Route::get('/','index')->name('place.index');
 
     Route::get('/create','create')->name('place.create');
@@ -58,7 +63,17 @@ Route::prefix('/place')->middleware(['auth','checkAdmin'])->controller('WebUI\Pl
     Route::delete('/{id}','destroy')->name('place.destroy');
 });
 
-Route::prefix('/customer')->middleware(['auth','checkAdmin'])->controller('WebUI\CustomerController')->group(function (){
+
+Route::prefix('/place/proposed')->controller('WebUI\ProposedPlacesController')
+    ->group(function (){
+        Route::get('/index','index')->name('place.proposed.index');
+        ROute::delete('/{id}','delete')->name('place.proposed.destroy');
+    });
+
+Route::prefix('/customer')
+    ->middleware(['auth','checkAdmin'])
+    ->controller('WebUI\CustomerController')
+    ->group(function (){
     Route::get('/','index')->name('customer.index');
 
     Route::get('/{id}','show')->name('customer.show');
@@ -66,15 +81,32 @@ Route::prefix('/customer')->middleware(['auth','checkAdmin'])->controller('WebUI
 
 });
 
-Route::prefix('/organizer')->middleware(['auth','checkAdmin'])->controller('WebUI\OrgnizerController')->group(function (){
+Route::prefix('/organizer')
+    ->middleware(['auth','checkAdmin'])
+    ->controller('WebUI\OrgnizerController')
+    ->group(function (){
     Route::get('/','index')->name('organizer.index');
 
     Route::get('/{id}','show')->name('organizer.show');
-
-
 });
 
 
+Route::prefix('/promotion')
+    ->middleware(['auth','checkAdmin'])
+    ->controller(PromotionController::class)->group(function(){
+    Route::get('/index','index')->name('promotion.index');
+    Route::get('{id}/show','show')->name('promotion.show');
+    Route::put('/{id}/accept','acceptPromotion')->name('promotion.accept');
+    Route::put('/{id}/reject','rejectPromotion')->name('promotion.reject');
+});
+
+Route::prefix('/report')
+    ->controller(ReportController::class)
+    ->group(function (){
+        Route::get('/index','index')->name('report.name');
+        Route::get('/{id}','show')->name('report.show');
+
+    });
 
 
 

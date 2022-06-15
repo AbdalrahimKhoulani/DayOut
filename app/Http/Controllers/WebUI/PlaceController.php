@@ -85,7 +85,7 @@ class PlaceController extends Controller
 
             $path = Storage::url($path);
 
-            
+
             $place_images[$i] = PlacePhotos::create([
                 'place_id' => $place->id,
                 'path' => $path
@@ -133,7 +133,7 @@ class PlaceController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param int $id
-     * @return Application|Factory|View
+     * @return Application|Factory|View|\Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, $id)
     {

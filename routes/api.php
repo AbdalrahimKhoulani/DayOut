@@ -32,7 +32,6 @@ use Illuminate\Support\Facades\Validator;
 */
 
 
-
 Route::post('/notify', function (Request $request) {
 
     $user = User::where('id', $request['user_id'])->get();
@@ -45,7 +44,7 @@ Route::prefix('/place')->controller(PlaceController::class)->group(function () {
 
     Route::get('', 'index');
     Route::get('/popular/{id}', 'popularPlaces');
-    Route::get('/details/{place_id}','placeDetails');
+    Route::get('/details/{place_id}', 'placeDetails');
 
     Route::get('/photo/{id}', 'placePhoto');
 
@@ -75,6 +74,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
         Route::post('/profile/customer/edit', 'editProfileCustomer');
         Route::get('/logout', 'logout');
         Route::put('/mobile-token', 'setMobileToken');
+        Route::post('/report', 'reportUser');
     });
 });
 
@@ -112,27 +112,28 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::put('/edit/places', 'editTripPlaces');
         Route::put('/edit/types/{id}', 'editTripTypes');
 
+        Route::post('/book', 'bookTrip');
         Route::post('/rate', 'rateTrip');
 
         Route::put('/{id}/begin', 'beginTrip');
         Route::put('/{id}/end', 'endTrip');
 
-        Route::put('/place-status/update/{trip_id}/{place_id}','updatePlaceStatus');
+        Route::put('/place-status/update/{trip_id}/{place_id}', 'updatePlaceStatus');
 
     });
 });
 
 Route::prefix('/trip/road-map')->middleware('auth:api')
-    ->controller(RoadMapController::class)->group(function (){
+    ->controller(RoadMapController::class)->group(function () {
 
-    Route::get('/{trip_id}','getRoadMapPlaces');
+        Route::get('/{trip_id}', 'getRoadMapPlaces');
 
 
-});
+    });
 
 Route::prefix('/organizer')->controller(OrganizerController::class)->group(function () {
     Route::get('/profile/{id}', 'organizerProfile');
-
+    Route::get('/index', 'index');
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/profile/edit', 'editOrganizerProfile');
@@ -173,14 +174,14 @@ Route::middleware('auth:api')->controller(CheckOutController::class)->group(func
     Route::post('trip/checkout','checkOut');
 });
 
-Route::prefix('/polls')->controller(PollController::class)->group(function (){
+Route::prefix('/polls')->controller(PollController::class)->group(function () {
 
-    Route::get('','index');
+    Route::get('', 'index');
 
-    Route::middleware('auth:api')->group(function (){
-        Route::post('/create','create');
-        Route::get('/organizer','organizerPolls');
-        Route::put('/vote/{poll_id}/{poll_choice_id}','vote');
+    Route::middleware('auth:api')->group(function () {
+        Route::post('/create', 'create');
+        Route::get('/organizer', 'organizerPolls');
+        Route::put('/vote/{poll_id}/{poll_choice_id}', 'vote');
     });
 });
 

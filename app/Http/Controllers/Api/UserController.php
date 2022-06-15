@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\User;
 
 
+use App\Models\UserReport;
 use App\Models\UserRole;
 use Intervention\Image\Facades\Image;
 use Symfony\Component\HttpFoundation\Request;
@@ -349,8 +350,8 @@ class UserController extends BaseController
                 $last_word = array_pop($pieces);
                 Storage::disk('public')->delete('\users\\' . $last_word);
                 $user['photo'] = '';
-                if($request['photo'] != '')
-                $user['photo'] = $this->storeProfileImage($request['photo']);
+                if ($request['photo'] != '')
+                    $user['photo'] = $this->storeProfileImage($request['photo']);
 
             }
             if ($request->has('gender'))
@@ -397,4 +398,26 @@ class UserController extends BaseController
         return $this->sendResponse($user->photo, 'Succeeded');
     }
 
+    public function reportUser(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'target_id' => 'required',
+            'report' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation error',$validator->errors());
+        }
+
+        $userReport = new UserReport();
+        $userReport->reporter_id = Auth::id();
+        $userReport->target_id = $request['target_id'];
+        $userReport->report = $request['report'];
+        $userReport->save();
+
+        error_log('Reported successfully');
+
+        return $this->sendResponse($userReport,'Reported successfully');
+    }
 }
