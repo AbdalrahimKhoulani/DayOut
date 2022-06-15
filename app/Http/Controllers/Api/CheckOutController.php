@@ -8,7 +8,8 @@ use App\Models\Trip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Api\BaseController;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Validator;
 
 class CheckOutController extends BaseController
 {
@@ -18,6 +19,9 @@ class CheckOutController extends BaseController
             'trip_id' => 'required',
             'passengers_ids' => 'required'
         ]);
+
+        $this->validatorCheck($validator);
+
 
         $trip_id = $request['trip_id'];
 
@@ -52,5 +56,24 @@ class CheckOutController extends BaseController
         }
 
         return $this->sendResponse($passengers,'Passengers were checkout successfully');
+    }
+
+    private function sendInfoToLog($message,$context){
+        Log::channel('requestlog')->info($message,$context);
+    }
+
+    private function sendErrorToLog($message,$context){
+        Log::channel('requestlog')->error($message,$context);
+
+    }
+
+    public function validatorCheck(Validator $validator){
+
+        if($validator->fails()){
+            $this->sendErrorToLog('Validator failed',[$validator->errors()]);
+            return false;
+        }
+        else
+            return true;
     }
 }
