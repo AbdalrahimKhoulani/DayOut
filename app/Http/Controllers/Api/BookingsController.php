@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\BaseController;
 use App\Models\CustomerTrip;
 use App\Models\Organizer;
+use App\Models\Passenger;
 use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 class BookingsController extends BaseController
@@ -63,9 +66,12 @@ class BookingsController extends BaseController
         return $this->sendResponse($tripCustomers, 'Bookings list returned successfully');
     }
 
-    public function confirmBooking($id)
+    /*
+     * Message to ABD : خليت الطلب ياخد رقم المستخدم و رقم الرحلة لإنو الفرونت ما عندن رقم الحجز*/
+    public function confirmBooking($customerId,$tripId)
     {
-        $booking = CustomerTrip::with(['user', 'passengers'])->where('id', $id)->first();
+        $booking = CustomerTrip::with(['user','passengers'])->where('customer_Id',$customerId)->where('trip_id',$tripId)->first();
+       // $booking = CustomerTrip::with(['user', 'passengers'])->where('id', $id)->first();
         if ($booking == null) {
             error_log('This booking not found');
             return $this->sendError('This booking not found');
@@ -83,9 +89,10 @@ class BookingsController extends BaseController
         return $this->sendResponse($booking, 'This booking confirmed successfully');
     }
 
-    public function cancelBooking($id)
+    public function cancelConfirmBooking($customerId,$tripId)
     {
-        $booking = CustomerTrip::with(['user', 'passengers'])->where('id', $id)->first();
+        $booking = CustomerTrip::with(['user','passengers'])->where('customer_Id',$customerId)->where('trip_id',$tripId)->first();
+        //$booking = CustomerTrip::with(['user', 'passengers'])->where('id', $id)->first();
         if ($booking == null) {
             error_log('This booking not found');
             return $this->sendError('This booking not found');
@@ -105,5 +112,115 @@ class BookingsController extends BaseController
         $booking->save();
 
         return $this->sendResponse($booking,'This booking canceled successfully');
+    }
+
+    public function bookTrip(Request $request)
+    {
+        error_log('Book trip request!');
+        $id = Auth::id();
+        $user = User::find($id);
+        if ($user == null) {
+            error_log('User not found!');
+            return $this->sendError('User not found!');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'trip_id' => 'required',
+        ]);
+        if ($validator->fails()) {
+            error_log($validator->errors());
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        if($this->isInTrip(Auth::id(),$request['trip_id'])){
+            $this->sendErrorToLog('User already booked this trip',[]);
+            return $this->sendError('User already booked this trip',[],406);
+        }
+        $trip = Trip::find($request['trip_id'])->with(['organizer' => function ($query) use ($id) {
+            $query->where('user_id', $id);
+        }])->first();
+        if ($trip->organizer != null) {
+            error_log('User is the one that created the trip!');
+            return $this->sendError('User is the one that created the trip!', [], 405);
+        }
+
+        $customerTrip = new CustomerTrip();
+        $customerTrip->trip()->associate($request['trip_id']);
+        $customerTrip->user()->associate($id);
+        $customerTrip->save();
+        if($request['passengers']!=null) {
+            $passengers = $request['passengers'];
+            for ($i = 0; $i < count($passengers); $i++) {
+                $passenger = new Passenger;
+                $passenger->passenger_name = $passengers[$i]['name'];
+                $passenger->customerTrip()->associate($customerTrip->id);
+                $passenger->save();
+            }
+        }
+        error_log('book trip request succeeded!');
+        return $this->sendResponse($customerTrip, 'Succeeded!');
+    }
+
+
+    public function cancelBookingByUser($tripId){
+        $booking = CustomerTrip::where('customer_Id',Auth::id())->where('trip_id',$tripId)->first();
+
+
+
+        if($booking == null){
+            error_log('Booking not found');
+            return $this->sendError('Booking with id : '.$tripId.' not found');
+        }
+        if($booking->customer_id!= Auth::id()){
+            error_log('Do not have permission to this booking');
+            return $this->sendError('Do not have permission to this booking',[],401);
+        }
+        if($booking->confirmed_at != null){
+            error_log('This booking is confirmed , Please see organizer');
+            return $this->sendError('This booking is confirmed , Please see organizer',[],401);
+        }
+        $booking->delete();
+
+
+        error_log('Booking canceled successfully');
+        return $this->sendResponse($booking,'Booking canceled successfully');
+    }
+
+    public function cancelBookingByOrganizer($id){
+        $booking = CustomerTrip::find($id);
+
+        if($booking == null){
+            error_log('Booking not found');
+            return $this->sendError('Booking with id : '.$id.' not found');
+        }
+        if($booking->trip->organizer->user_id != Auth::id()){
+            error_log('Do not have permission to this booking');
+            return $this->sendError('Do not have permission to this booking',[],401);
+        }
+        $booking->delete();
+
+
+        error_log('Booking canceled successfully');
+        $booking->makeHidden('trip');
+        return $this->sendResponse($booking,'Booking canceled successfully');
+    }
+
+    public function isInTrip($customerId,$tripId){
+
+        $customerTrip = CustomerTrip::where('customer_id',$customerId)->where('trip_id',$tripId)->first();
+
+        if ($customerTrip != null){
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+    private function sendInfoToLog($message,$context){
+        Log::channel('requestlog')->info($message,$context);
+    }
+
+    private function sendErrorToLog($message,$context){
+        Log::channel('requestlog')->error($message,$context);
+
     }
 }

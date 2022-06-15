@@ -10,6 +10,7 @@ use App\Models\Trip;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
+use http\Header;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -136,6 +137,9 @@ class TripController extends BaseController
         } else {
             $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])->
             withCount('customerTrips')->
+                with('customerTrips',function ($query) use ($id) {
+                    $query->where('customer_id',$id);
+            })->
             whereHas('customerTrips', function ($query) use ($id) {
                 $query->where('customer_id', $id);
             }, '!=', 0)->
@@ -143,6 +147,8 @@ class TripController extends BaseController
                 ->with(['placeTrips' => function ($query) {
                     $query->with('place');
                 }, 'tripPhotos'])->get();
+
+
         }
 
 
@@ -504,8 +510,31 @@ class TripController extends BaseController
         error_log('Get trip details!');
 
         $trip = Trip::where('id', $id)
+            ->with(['types',  'placeTrips' => function ($query) {
+                $query->with('place');
+            }, 'tripPhotos' => function ($query) {
+                $query->select(['id', 'trip_id']);
+            }])->first();
+        if ($trip == null) {
+            error_log('Trip not found!');
+            return $this->sendError('Trip not found!');
+        }
+        $bookingController = new BookingsController();
+        $trip['is_in_trip'] = $bookingController->isInTrip(Auth::guard('api')->id(),$trip->id);
+        $trip['customerTrips'] = CustomerTrip::where('customer_id',Auth::guard('api')->id())
+            ->where('trip_id',$trip->id)->with('user')->first();
+        error_log('Get trip details succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
+    }
+
+    public function getTripDetailsOrganizer($id){
+
+        error_log('Get trip details organizer!');
+
+
+        $trip = Trip::where('id', $id)
             ->with(['types', 'customerTrips' => function ($query) {
-                return $query->with('user');
+                return $query->with('user')->with('passengers');
             }, 'placeTrips' => function ($query) {
                 $query->with('place');
             }, 'tripPhotos' => function ($query) {
@@ -515,51 +544,11 @@ class TripController extends BaseController
             error_log('Trip not found!');
             return $this->sendError('Trip not found!');
         }
-        error_log('Get trip details succeeded!');
+        $bookingController = new BookingsController();
+        $trip['is_in_trip'] = $bookingController->isInTrip(Auth::guard('api')->id(),$trip->id);
+
+        error_log('Get trip details organizer succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
-    }
-
-    public function bookTrip(Request $request)
-    {
-        error_log('Book trip request!');
-        $id = Auth::id();
-        $user = User::find($id);
-        if ($user == null) {
-            error_log('User not found!');
-            return $this->sendError('User not found!');
-        }
-
-        $validator = Validator::make($request->all(), [
-            'trip_id' => 'required',
-            'passengers' => 'required'
-        ]);
-        if ($validator->fails()) {
-            error_log($validator->errors());
-            return $this->sendError('Validator failed! check the data', $validator->errors());
-        }
-        $trip = Trip::find($request['trip_id'])->with(['organizer' => function ($query) use ($id) {
-            $query->where('user_id', $id);
-        }])->first();
-        if ($trip->organizer != null) {
-            error_log('User is the one that created the trip!');
-            return $this->sendError('User is the one that created the trip!', [], 405);
-        }
-
-        $customerTrip = new CustomerTrip();
-        $customerTrip->trip()->associate($request['trip_id']);
-        $customerTrip->user()->associate($id);
-        $customerTrip->save();
-        if($request['passengers']!=null) {
-            $passengers = $request['passengers'];
-            for ($i = 0; $i < count($passengers); $i++) {
-                $passenger = new Passenger;
-                $passenger->passenger_name = $passengers[$i]['name'];
-                $passenger->customerTrip()->associate($customerTrip->id);
-                $passenger->save();
-            }
-        }
-        error_log('book trip request succeeded!');
-        return $this->sendResponse($customerTrip, 'Succeeded!');
     }
 
     public function rateTrip(Request $request)
@@ -658,7 +647,7 @@ class TripController extends BaseController
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
-        return  $this->sendResponse($trip,'Trip ended successfully');
+        return $this->sendResponse($trip, 'Trip started successfully');
     }
 
     public function updatePlaceStatus($trip_id, $place_id){
@@ -683,6 +672,13 @@ class TripController extends BaseController
 
         Log::channel('requestlog')->info('Succeeded!');
         return $this->sendResponse($placeTrip,'Succeeded!');
+    }
+
+    private function getOrganizerId(){
+        $organizer = Organizer::where('user_id',Auth::id())->first();
+        if($organizer == null)
+            return null;
+        return $organizer->id;
     }
 
 }

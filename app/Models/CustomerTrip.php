@@ -16,6 +16,7 @@ class CustomerTrip extends Model
         'confirmed_at' => 'datetime'
     ];
 
+
     public function confirmBooking(){
         return $this->forceFill(['confirmed_at' => $this->freshTimestamp()])->save();
     }

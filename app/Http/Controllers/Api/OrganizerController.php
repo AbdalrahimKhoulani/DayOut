@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Organizer;
+use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -52,6 +54,7 @@ class OrganizerController extends BaseController
             }])->
             withCount('followers', 'trips')->first();
             if ($organizer != null) {
+                $organizer['rating'] = $this->calculateOrganizerRating($id);
                 error_log('Organizer profile request succeeded');
                 return $this->sendResponse($organizer, 'Succeeded!');
             }
@@ -145,4 +148,53 @@ class OrganizerController extends BaseController
         return $this->sendResponse($user,'Succeeded');
     }
 
+    private function getOrganizerId($id){
+        $organizer = Organizer::where('user_id',$id)->first();
+        if($organizer == null)
+            return null;
+        return $organizer->id;
+    }
+
+    private function calculateOrganizerRating($id){
+
+        $organizerId = $this->getOrganizerId($id);
+        if($organizerId == null){
+            $this->sendErrorToLog('User is not organizer',[]);
+            return $this->sendError('User is not organizer',[],403);
+        }
+
+        $trips = Trip::where('organizer_id',$organizerId)->with('customerTrips');
+        $rating = 0;
+        $trips->each(function ($trip) use (&$rating) {
+
+            $rating = $rating + $this->calculateAvgTripRating($trip);
+            $this->sendInfoToLog('',[$rating]);
+
+        });
+        $rating = $rating/$trips->count();
+
+        return $rating;
+    }
+
+    private  function calculateAvgTripRating($trip){
+        $avg = 0;
+        $customerTrips = $trip['customerTrips'];
+
+
+        $customerTrips->each(function ($customerTrip) use (&$avg) {
+            $avg = $avg + $customerTrip->rate;
+        });
+        if($customerTrips->count() == 0){
+            return 0;
+        }
+        return $avg/$customerTrips->count();
+    }
+    private function sendInfoToLog($message,$context){
+        Log::channel('requestlog')->info($message,$context);
+    }
+
+    private function sendErrorToLog($message,$context){
+        Log::channel('requestlog')->error($message,$context);
+
+    }
 }

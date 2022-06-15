@@ -81,8 +81,10 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
 Route::prefix('/trip')->controller(TripController::class)->group(function () {
 
     Route::get('', 'getTrips');
-    Route::get('/{id}/details', 'getTripDetails');
     Route::get('/types', 'getTypes');
+    Route::get('/{id}/details','getTripDetails');
+    Route::get('/{id}/details/organizer','getTripDetailsOrganizer');
+
 
     Route::get('/photo/{id}/base64', 'tripPhotoAsBase64');
 
@@ -92,6 +94,7 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
 
         Route::post('/create', 'createTrip');
+
         Route::post('/create/add/photos', 'addTripPhotos');
         Route::post('/create/add/places', 'addPlacesToTrip');
         Route::post('/create/add/types', 'addTripType');
@@ -150,8 +153,16 @@ Route::prefix('/bookings')->controller(BookingsController::class)->group(functio
     Route::middleware('auth:api')->group(function () {
         Route::get('/trip/{trip_id}', 'getBookingsForTrip');
         Route::get('/trip/{trip_id}/passengers', 'getPassengersForTrip');
-        Route::put('/{id}/confirm', 'confirmBooking');
-        Route::put('/{id}/cancel', 'cancelBooking');
+
+       // Route::put('/{id}/confirm', 'confirmBooking');
+       // Route::put('/{id}/cancel', 'cancelBooking');
+        Route::put('/customer/{customer_id}/trip/{trip_id}/confirm', 'confirmBooking');
+        Route::put('/customer/{customer_id}/trip/{trip_id}/cancel', 'cancelConfirmBooking');
+
+        Route::put('/{trip_id}/user/cancel', 'cancelBookingByUser');
+        Route::put('/{id}/organizer/cancel', 'cancelBookingByOrganizer');
+        Route::post('/book', 'bookTrip');
+
     });
 });
 
@@ -159,8 +170,8 @@ Route::middleware('auth:api')->controller(NotificationsController::class)->group
     Route::get('/notifications', 'index');
 });
 
-Route::middleware('auth:api')->controller(CheckOutController::class)->group(function () {
-    Route::post('trip/checkout', 'checkOut');
+Route::middleware('auth:api')->controller(CheckOutController::class)->group(function(){
+    Route::post('trip/checkout','checkOut');
 });
 
 Route::prefix('/polls')->controller(PollController::class)->group(function () {
