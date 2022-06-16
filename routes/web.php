@@ -103,9 +103,11 @@ Route::prefix('/promotion')
 Route::prefix('/report')
     ->controller(ReportController::class)
     ->group(function (){
-        Route::get('/index','index')->name('report.name');
+        Route::get('/index','index')->name('report.index');
         Route::get('/{id}','show')->name('report.show');
 
+        Route::put('/{id}/accept','acceptReport')->name('report.accept');
+        Route::put('/{id}/reject','rejectReport')->name('report.reject');
     });
 
 
