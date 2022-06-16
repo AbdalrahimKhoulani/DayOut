@@ -28,6 +28,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{route('promotion.index')}}">Promotions</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{route('report.index')}}">Reports</a>
+                    </li>
                 </ul>
 
 

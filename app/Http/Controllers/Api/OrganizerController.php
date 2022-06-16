@@ -17,30 +17,7 @@ class OrganizerController extends BaseController
 {
     public function index(){
 
-        /**
-         *      "id": 2,
-        "user_id": 2,
-        "credential_photo": "https://via.placeholder.com/640x480.png/00cc22?text=dicta",
-        "created_at": "2022-05-06 15:43:47",
-        "updated_at": "2022-05-06 15:43:47",
-        "bio": "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
-        "first_name": "abd",
-        "last_name": "kholani",
-        "email": "abd.kholani@gmail.com",
-        "phone_number": "6598485",
-        "password": "$2y$10$sUX8rBTwrzfBqNabptHWsuGn0zdKoRF6aLzKeHpEdS2U7kVR46YmW",
-        "photo": null,
-        "gender": "male",
-        "mobile_token": null,
-        "verified_at": "2022-05-06 15:43:47",
-        "is_active": 1,
-        "deleted_at": null
-         */
-        $organizers = DB::table('organizers')
-            ->join('users','users.id','=','organizers.user_id')
-            ->select(['organizers.id','user_id','first_name','last_name','bio','email','phone_number','photo','gender'])
-            ->where('is_active','=',true)
-            ->get();
+        $organizers = Organizer::with('user')->paginate(10);
 
         return $this->sendResponse($organizers,'Organizers retrieved successfully');
     }
