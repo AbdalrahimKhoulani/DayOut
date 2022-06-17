@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Follower;
 use App\Models\Organizer;
 use App\Models\Trip;
 use App\Models\User;
@@ -15,29 +16,46 @@ use Illuminate\Http\Request;
 
 class OrganizerController extends BaseController
 {
-    public function index(){
+    public function index()
+    {
 
-        $organizers = Organizer::with('user')->paginate(10);
+        $user_id = Auth::id();
 
-        return $this->sendResponse($organizers,'Organizers retrieved successfully');
+        $organizers = Organizer::with(['user'])
+//            ->whereHas('followers', function ($query) use ($user_id) {
+//                $query->where('user_id', $user_id);
+//            })
+            ->withCount(['trips', 'followers'])->get();
+
+        foreach ($organizers as $organizer) {
+            $organizer['rating'] = $this->calculateOrganizerRating($organizer->id);
+            $organizer['iFollowHim'] = (Follower::where('user_id','=',$user_id)
+                    ->where('organizer_id','=',$organizer->id)
+                    ->first()!=null);
+        }
+
+
+
+
+        return $this->sendResponse($organizers, 'Organizers retrieved successfully');
     }
 
     public function organizerProfile($id)
     {
         error_log('Organizer profile request');
-            $organizer = Organizer::select(['id', 'user_id','bio'])->where('user_id', $id)->
-            with(['user' => function ($query) {
-                $query->select(['id', 'first_name', 'last_name', 'email', 'phone_number', 'gender','photo']);
-            }])->
-            withCount('followers', 'trips')->first();
-            if ($organizer != null) {
-                $organizer['rating'] = $this->calculateOrganizerRating($id);
-                error_log('Organizer profile request succeeded');
-                return $this->sendResponse($organizer, 'Succeeded!');
-            }
+        $organizer = Organizer::select(['id', 'user_id', 'bio'])->where('user_id', $id)->
+        with(['user' => function ($query) {
+            $query->select(['id', 'first_name', 'last_name', 'email', 'phone_number', 'gender', 'photo']);
+        }])->
+        withCount('followers', 'trips')->first();
+        if ($organizer != null) {
+            $organizer['rating'] = $this->calculateOrganizerRating($id);
+            error_log('Organizer profile request succeeded');
+            return $this->sendResponse($organizer, 'Succeeded!');
+        }
 
-            error_log('Organizer not found!');
-            return $this->sendError('Organizer not found!');
+        error_log('Organizer not found!');
+        return $this->sendError('Organizer not found!');
 
 
     }
@@ -48,10 +66,9 @@ class OrganizerController extends BaseController
 
 
         $id = Auth::id();
-        if(count($request->all()) <=0)
-        {
+        if (count($request->all()) <= 0) {
             error_log('No data were sent!');
-            return $this->sendError('No data were sent!',[],500);
+            return $this->sendError('No data were sent!', [], 500);
         }
 
         $validator = Validator::make($request->all(), [
@@ -60,8 +77,7 @@ class OrganizerController extends BaseController
             'gender' => ['in:Male,Female']
         ]);
 
-        if ($validator->fails())
-        {
+        if ($validator->fails()) {
             error_log($validator->errors());
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
@@ -90,24 +106,25 @@ class OrganizerController extends BaseController
 
     }
 
-    private function storeProfileImage( $photo)
+    private function storeProfileImage($photo)
     {
         $image = base64_decode($photo);
         $filename = uniqid();
         $extention = '.png';
         $f = finfo_open();
         $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
-        if($result == 'image/jpeg')
+        if ($result == 'image/jpeg')
             $extention = '.jpeg';
         elseif ($result == 'image/webp')
             $extention = '.webp';
-        elseif($result == 'image/x-ms-bmp')
+        elseif ($result == 'image/x-ms-bmp')
             $extention = '.bmp';
         Storage::disk('users')->put($filename . $extention, $image);
-        return Storage::disk('users')->url('users/'.$filename . $extention);
+        return Storage::disk('users')->url('users/' . $filename . $extention);
     }
 
-    public function deleteProfileImage(){
+    public function deleteProfileImage()
+    {
         $id = Auth::id();
         $user = User::find($id);
         $file = Storage::path($user['photo']);
@@ -117,43 +134,49 @@ class OrganizerController extends BaseController
 
 
         $last_word = array_pop($pieces);
-        Storage::disk('public')->delete('users/'.$last_word);
+        Storage::disk('public')->delete('users/' . $last_word);
 
-        $user['photo']='';
+        $user['photo'] = '';
         $user->save();
         error_log('File deleted successful');
-        return $this->sendResponse($user,'Succeeded');
+        return $this->sendResponse($user, 'Succeeded');
     }
 
-    private function getOrganizerId($id){
-        $organizer = Organizer::where('user_id',$id)->first();
-        if($organizer == null)
+    private function getOrganizerId($id)
+    {
+        $organizer = Organizer::where('user_id', $id)->first();
+        if ($organizer == null)
             return null;
         return $organizer->id;
     }
 
-    private function calculateOrganizerRating($id){
+    private function calculateOrganizerRating($id)
+    {
 
         $organizerId = $this->getOrganizerId($id);
-        if($organizerId == null){
-            $this->sendErrorToLog('User is not organizer',[]);
-            return $this->sendError('User is not organizer',[],403);
+        if ($organizerId == null) {
+            $this->sendErrorToLog('User is not organizer', []);
+            return $this->sendError('User is not organizer', [], 403);
         }
 
-        $trips = Trip::where('organizer_id',$organizerId)->with('customerTrips');
+        $trips = Trip::where('organizer_id', $organizerId)->with('customerTrips');
         $rating = 0;
         $trips->each(function ($trip) use (&$rating) {
 
             $rating = $rating + $this->calculateAvgTripRating($trip);
-            $this->sendInfoToLog('',[$rating]);
+            $this->sendInfoToLog('', [$rating]);
 
         });
-        $rating = $rating/$trips->count();
+        if ($trips->count() == 0) {
+            return 0;
+        }
+        $rating = $rating / $trips->count();
 
         return $rating;
     }
 
-    private  function calculateAvgTripRating($trip){
+    private function calculateAvgTripRating($trip)
+    {
         $avg = 0;
         $customerTrips = $trip['customerTrips'];
 
@@ -161,17 +184,20 @@ class OrganizerController extends BaseController
         $customerTrips->each(function ($customerTrip) use (&$avg) {
             $avg = $avg + $customerTrip->rate;
         });
-        if($customerTrips->count() == 0){
+        if ($customerTrips->count() == 0) {
             return 0;
         }
-        return $avg/$customerTrips->count();
-    }
-    private function sendInfoToLog($message,$context){
-        Log::channel('requestlog')->info($message,$context);
+        return $avg / $customerTrips->count();
     }
 
-    private function sendErrorToLog($message,$context){
-        Log::channel('requestlog')->error($message,$context);
+    private function sendInfoToLog($message, $context)
+    {
+        Log::channel('requestlog')->info($message, $context);
+    }
+
+    private function sendErrorToLog($message, $context)
+    {
+        Log::channel('requestlog')->error($message, $context);
 
     }
 }
