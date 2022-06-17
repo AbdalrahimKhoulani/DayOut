@@ -136,8 +136,9 @@ Route::prefix('/trip/road-map')->middleware('auth:api')
 
 Route::prefix('/organizer')->controller(OrganizerController::class)->group(function () {
     Route::get('/profile/{id}', 'organizerProfile');
-    Route::get('/index', 'index');
+
     Route::middleware('auth:api')->group(function () {
+        Route::get('/index', 'index');
 
         Route::post('/profile/edit', 'editOrganizerProfile');
         Route::delete('/profile/delete/photo', 'deleteProfileImage');
@@ -148,7 +149,8 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
 
 Route::prefix('/search')->controller(SearchController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
-        Route::post('/trip', 'search');
+        Route::post('/trip', 'searchForTrip');
+        Route::post('/place','searchForPlace');
     });
 });
 
