@@ -156,7 +156,8 @@ class OrganizerController extends BaseController
         $organizerId = $this->getOrganizerId($id);
         if ($organizerId == null) {
             $this->sendErrorToLog('User is not organizer', []);
-            return $this->sendError('User is not organizer', [], 403);
+//            return $this->sendError('User is not organizer', [], 403);
+            return 0;
         }
 
         $trips = Trip::where('organizer_id', $organizerId)->with('customerTrips');
