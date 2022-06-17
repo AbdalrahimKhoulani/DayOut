@@ -25,7 +25,7 @@ class OrganizerController extends BaseController
 //            ->whereHas('followers', function ($query) use ($user_id) {
 //                $query->where('user_id', $user_id);
 //            })
-            ->withCount(['trips', 'followers'])->get();
+            ->withCount(['trips', 'followers'])->paginate(10);
 
         foreach ($organizers as $organizer) {
             $organizer['rating'] = $this->calculateOrganizerRating($organizer->user_id);
@@ -156,7 +156,8 @@ class OrganizerController extends BaseController
         $organizerId = $this->getOrganizerId($id);
         if ($organizerId == null) {
             $this->sendErrorToLog('User is not organizer', []);
-            return $this->sendError('User is not organizer', [], 403);
+//            return $this->sendError('User is not organizer', [], 403);
+            return 0;
         }
 
         $trips = Trip::where('organizer_id', $organizerId)->with('customerTrips');
