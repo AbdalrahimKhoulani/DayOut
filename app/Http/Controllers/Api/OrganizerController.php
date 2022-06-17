@@ -28,7 +28,7 @@ class OrganizerController extends BaseController
             ->withCount(['trips', 'followers'])->paginate(10);
 
         foreach ($organizers as $organizer) {
-            $organizer['rating'] = $this->calculateOrganizerRating($organizer->id);
+            $organizer['rating'] = $this->calculateOrganizerRating($organizer->user_id);
             $organizer['iFollowHim'] = (Follower::where('user_id','=',$user_id)
                     ->where('organizer_id','=',$organizer->id)
                     ->first()!=null);
