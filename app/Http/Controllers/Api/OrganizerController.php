@@ -28,7 +28,7 @@ class OrganizerController extends BaseController
             ->withCount(['trips', 'followers'])->get();
 
         foreach ($organizers as $organizer) {
-            $organizer['rating'] = $this->calculateOrganizerRating($organizer->id);
+            $organizer['rating'] = $this->calculateOrganizerRating($organizer->user_id);
             $organizer['iFollowHim'] = (Follower::where('user_id','=',$user_id)
                     ->where('organizer_id','=',$organizer->id)
                     ->first()!=null);
@@ -154,10 +154,10 @@ class OrganizerController extends BaseController
     {
 
         $organizerId = $this->getOrganizerId($id);
-//        if ($organizerId == null) {
-//            $this->sendErrorToLog('User is not organizer', []);
-//            return $this->sendError('User is not organizer', [], 403);
-//        }
+        if ($organizerId == null) {
+            $this->sendErrorToLog('User is not organizer', []);
+            return $this->sendError('User is not organizer', [], 403);
+        }
 
         $trips = Trip::where('organizer_id', $organizerId)->with('customerTrips');
         $rating = 0;
