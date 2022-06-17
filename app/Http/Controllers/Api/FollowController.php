@@ -34,16 +34,16 @@ class FollowController extends BaseController
         $userId = Auth::id();
         $this->sendInfoToLog('Get followed organizers request!',['user_id',$userId]);
 
-//        $followedOrganizers = Organizer::with('user')->whereHas('followers',function ($query) use ($userId) {
-//            $query->where('user_id',$userId);
-//        })->get();
-        $followedOrganizers = DB::table('organizers as organizers')
-            ->join('users as users','users.id','=','organizers.user_id')
-            ->join('followers as f','organizers.id','=','f.organizer_id')
-            ->select(['organizers.id','organizers.user_id','first_name','last_name','bio','email','phone_number','photo','gender'])
-            ->where('is_active','=',true)
-            ->where('f.user_id','=',$userId)
-            ->get();
+        $followedOrganizers = Organizer::with('user')->whereHas('followers',function ($query) use ($userId) {
+            $query->where('user_id',$userId);
+        })->paginate(10);
+//        $followedOrganizers = DB::table('organizers as organizers')
+//            ->join('users as users','users.id','=','organizers.user_id')
+//            ->join('followers as f','organizers.id','=','f.organizer_id')
+//            ->select(['organizers.id','organizers.user_id','first_name','last_name','bio','email','phone_number','photo','gender'])
+//            ->where('is_active','=',true)
+//            ->where('f.user_id','=',$userId)
+//            ->get();
 
         if($followedOrganizers->count() <= 0){
             $this->sendErrorToLog('User is not following anyone!',['user_id',$userId]);
