@@ -25,7 +25,7 @@ class OrganizerController extends BaseController
 //            ->whereHas('followers', function ($query) use ($user_id) {
 //                $query->where('user_id', $user_id);
 //            })
-            ->withCount(['trips', 'followers'])->get();
+            ->withCount(['trips', 'followers'])->paginate(10);
 
         foreach ($organizers as $organizer) {
             $organizer['rating'] = $this->calculateOrganizerRating($organizer->id);
