@@ -13,7 +13,8 @@ class SearchController extends BaseController
 {
     public function searchForTrip(Request $request){
 
-        $trips = Trip::select(['id','title','description','begin_date','expire_date','price'])
+        $trips = Trip::has('placeTrips')->has('types')->has('tripPhotos')->
+        select(['id','title','description','begin_date','expire_date','price'])
             ->where('begin_date','>',Carbon::now())->
             withCount('customerTrips')->
             with(['types','placeTrips'=> function($query){
@@ -29,7 +30,12 @@ class SearchController extends BaseController
 
 
         if($request->has('title')){
-            $trips = Trip::where('title','like', '%'.$request['title'].'%');
+            $trips = Trip::where('title','like', '%'.$request['title'].'%')->has('placeTrips')->has('types')->has('tripPhotos')
+                ->where('begin_date','>',Carbon::now())->
+                withCount('customerTrips')->
+                with(['types','placeTrips'=> function($query){
+                    $query->with('place');
+                }, 'tripPhotos' ]);
         }
 
 
@@ -37,7 +43,11 @@ class SearchController extends BaseController
 
             $trips = $trips->whereHas('types',function($query) use($request) {
                 $query->where('name',$request['type']);
-            });
+            })->has('placeTrips')->has('types')->has('tripPhotos')->where('begin_date','>',Carbon::now())->
+            withCount('customerTrips')->
+            with(['types','placeTrips'=> function($query){
+                $query->with('place');
+            }, 'tripPhotos' ]);
         }
 
         if($request->has('place')){
@@ -46,7 +56,11 @@ class SearchController extends BaseController
             if($place!= null){
                 $trips = $trips->whereHas('placeTrips',function($query) use($place) {
                     $query->where('place_id',$place->id);
-                });
+                })->has('placeTrips')->has('types')->has('tripPhotos')->where('begin_date','>',Carbon::now())->
+                withCount('customerTrips')->
+                with(['types','placeTrips'=> function($query){
+                    $query->with('place');
+                }, 'tripPhotos' ]);
 
             }
             else{
@@ -56,11 +70,20 @@ class SearchController extends BaseController
         }
 
         if($request->has('min_price')){
-            $trips= $trips->where('price','>=',$request['min_price']);
+            $trips= $trips->where('price','>=',$request['min_price'])->has('placeTrips')->has('types')->has('tripPhotos')
+                ->where('begin_date','>',Carbon::now())->
+                withCount('customerTrips')->
+                with(['types','placeTrips'=> function($query){
+                    $query->with('place');
+                }, 'tripPhotos' ]);
         }
 
         if($request->has('max_price')){
-            $trips= $trips->where('price','<=',$request['max_price']);
+            $trips= $trips->where('price','<=',$request['max_price'])->has('placeTrips')->has('types')->has('tripPhotos')->where('begin_date','>',Carbon::now())->
+            withCount('customerTrips')->
+            with(['types','placeTrips'=> function($query){
+                $query->with('place');
+            }, 'tripPhotos' ]);
         }
 
         return $this->sendResponse($trips->paginate(10),'Result retrieved successfully') ;
