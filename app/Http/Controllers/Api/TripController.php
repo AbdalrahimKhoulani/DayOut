@@ -577,12 +577,17 @@ class TripController extends BaseController
     public function getTrips()
     {
         error_log('Get trips request!');
-        $trips = Trip::with(['placeTrips', 'types', 'tripPhotos'])->withCount('customerTrips')
+        $trips = Trip::has('placeTrips')->has('tripPhotos')->has('types')
+            ->with(['placeTrips', 'types', 'tripPhotos'])
+            ->withCount('customerTrips')
             ->with(['placeTrips' => function ($query) {
                 $query->with('place:id,name');
             }])
             ->where('begin_date', '>', Carbon::now())->orderByDesc('created_at')->paginate(10);
 
+//        $trips->load(['placeTrips','types','tripPhotos','placeTrips' => function($query){
+//            $query->with('place:id,name');
+//        }]);
 
         error_log('Get trips request succeeded!');
         return $this->sendResponse($trips, 'Get trips request succeeded!');
@@ -674,11 +679,47 @@ class TripController extends BaseController
         return $this->sendResponse($placeTrip,'Succeeded!');
     }
 
+    public function deleteTrip($tripId){
+
+        $this->sendInfoToLog('Delete trip request',['user_id' => Auth::id()]);
+
+        $organizerId = $this->getOrganizerId();
+
+        if($organizerId == null){
+            $this->sendErrorToLog('User is not organizer!',['user_id' => Auth::id()]);
+            return $this->sendError('User is not organizer!',[],403);
+        }
+
+        $trip = Trip::where('id',$tripId)->where('organizer_id',$organizerId)->first();
+
+        if($trip == null){
+            $this->sendErrorToLog('Trip does not exist or organizer did not create this trip!',['trip_id' => $tripId]);
+            return $this->sendError('Trip does not exist or organizer did not create this trip!',[],404);
+        }
+
+        $trip->delete();
+
+        $this->sendInfoToLog('Delete trip request succeeded',['user_id' => Auth::id()]);
+        return $this->sendResponse(null,'Delete trip request succeeded');
+
+    }
+
     private function getOrganizerId(){
         $organizer = Organizer::where('user_id',Auth::id())->first();
         if($organizer == null)
             return null;
         return $organizer->id;
+    }
+
+    private function sendInfoToLog($message, $context)
+    {
+        Log::channel('requestlog')->info($message, $context);
+    }
+
+    private function sendErrorToLog($message, $context)
+    {
+        Log::channel('requestlog')->error($message, $context);
+
     }
 
 }

@@ -110,7 +110,7 @@ Route::prefix('/trip')->controller(TripController::class)->group(function () {
         Route::get('/organizer', 'organizerTrip');
 
         Route::put('/edit', 'editTrip');
-
+        Route::delete('/{trip_id}/delete','deleteTrip');
         Route::put('/edit/photos', 'editTripPhotos');
         Route::put('/edit/places', 'editTripPlaces');
         Route::put('/edit/types/{id}', 'editTripTypes');
