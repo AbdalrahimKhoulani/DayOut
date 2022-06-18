@@ -697,6 +697,11 @@ class TripController extends BaseController
             return $this->sendError('Trip does not exist or organizer did not create this trip!',[],404);
         }
 
+        if($trip->begin_date < now()){
+            $this->sendErrorToLog('Trip is active',['trip_id' => $tripId]);
+            return $this->sendError('Trip is active',[],406);
+        }
+
         $trip->delete();
 
         $this->sendInfoToLog('Delete trip request succeeded',['user_id' => Auth::id()]);
