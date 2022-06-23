@@ -163,6 +163,12 @@ class BookingsController extends BaseController
                 $passenger->save();
             }
         }
+
+        $fcm = new FCM();
+        $fcm->sendNotification($trip->organizer->user, 'Booking trip',
+            $user->first_name.' '.$user->last_name .' booking in trip '.$trip->title);
+
+
         error_log('book trip request succeeded!');
         return $this->sendResponse($customerTrip, 'Succeeded!');
     }
