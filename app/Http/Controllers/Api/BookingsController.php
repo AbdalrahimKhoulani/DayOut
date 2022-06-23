@@ -8,6 +8,7 @@ use App\Models\Organizer;
 use App\Models\Passenger;
 use App\Models\Trip;
 use App\Models\User;
+use App\Services\FCM;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -85,6 +86,12 @@ class BookingsController extends BaseController
         }
         if ($booking->confirmed_at == null)
             $booking->confirmBooking();
+
+        $user = User::where('id', $booking->user_id)->get();
+
+        $fcm = new FCM();
+        $fcm->sendNotification($user, 'Confirm booking',
+            'Your booking in '.$booking->trip->title.' confirmed successfully by '.$booking->trip->organizer->user->first_name.' '.$booking->trip->organizer->user->last_name);
 
         return $this->sendResponse($booking, 'This booking confirmed successfully');
     }
@@ -180,6 +187,12 @@ class BookingsController extends BaseController
         }
         $booking->delete();
 
+        $user = User::where('id', $booking->user_id)->get();
+        $fcm = new FCM();
+        $fcm->sendNotification($user, 'Cancel booking',
+            'Your booking in '.$booking->trip->title.' canceled successfully');
+        $fcm->sendNotification($booking->trip->organizer->user,'Cancel booking',
+            'Booking in '.$booking->trip->title.' canceled by '.$user->first_name.' '.$user->last_name);
 
         error_log('Booking canceled successfully');
         return $this->sendResponse($booking,'Booking canceled successfully');
@@ -197,6 +210,13 @@ class BookingsController extends BaseController
             return $this->sendError('Do not have permission to this booking',[],401);
         }
         $booking->delete();
+
+        $user = User::where('id', $booking->user_id)->get();
+        $fcm = new FCM();
+        $fcm->sendNotification($user, 'Cancel booking',
+            'Your booking in '.$booking->trip->title.' canceled by organizer ');
+        $fcm->sendNotification($booking->trip->organizer->user,'Cancel booking',
+            'Booking in '.$booking->trip->title.' canceled successfully');
 
 
         error_log('Booking canceled successfully');

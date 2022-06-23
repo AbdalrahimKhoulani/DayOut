@@ -8,7 +8,10 @@
 
                         <div style="padding:50px;">
                             <div class="container">
-                                <div class="row">  <table class="table table-hover">
+                                @include('includes.messages')
+                                @if(count($users)!=0)
+                                <div class="row">
+                                    <table class="table table-hover">
                                         <thead>
                                         <tr>
                                             <th scope="col col-lg-9">#</th>
@@ -19,21 +22,21 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        @foreach($customers as $customer)
+                                        @foreach($users as $user)
                                             <tr>
-                                                <th scope="row">{{$customer->id}}</th>
-                                                <td>{{$customer->first_name.' '.$customer->last_name}}</td>
+                                                <th scope="row">{{$user->id}}</th>
+                                                <td>{{$user->first_name.' '.$user->last_name}}</td>
                                                 <td>
-                                                    <div class="overflow-auto">{{$customer->gender}} </div>
+                                                    <div class="overflow-auto">{{$user->gender}} </div>
                                                 </td>
                                                 <td>
-                                                    <div class="overflow-auto">{{$customer->phone_number}} </div>
+                                                    <div class="overflow-auto">{{$user->phone_number}} </div>
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group" aria-label="Basic example">
                                                         <div style="padding-right: 10px"><a type="button"
                                                                                             class="btn btn-info"
-                                                                                            href="{{route('customer.show',['id'=>$customer->id])}}">Details</a>
+                                                                                            href="{{route('user.show',['id'=>$user->id])}}">Details</a>
                                                         </div>
 
 
@@ -45,7 +48,12 @@
                                         </tbody>
                                     </table></div>
 
-                                <div class="row">  {!! $customers->links() !!}</div>
+                                <div class="row">  {!! $users->links() !!}</div>
+                                @else
+                                    <div class="alert alert-primary" role="alert">
+                                       No blocked users
+                                    </div>
+                                @endif
 
                             </div>
 

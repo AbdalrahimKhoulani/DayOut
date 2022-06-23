@@ -20,7 +20,7 @@
                         <a class="nav-link" href="{{route('place.index')}}">Places</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{route('customer.index')}}">Customers</a>
+                        <a class="nav-link" href="{{route('user.index')}}">Users</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{route('organizer.index')}}">Organizers</a>

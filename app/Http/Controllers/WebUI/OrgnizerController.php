@@ -17,9 +17,9 @@ class OrgnizerController extends Controller
      */
     public function index()
     {
-        $customers = User::whereIn('id',Organizer::select(['user_id'])->get(['user_id']))
+        $users = User::whereIn('id',Organizer::select(['user_id'])->get(['user_id']))
            ->paginate(10);
-        return view('customer.index')->with('customers',$customers);
+        return view('user.index')->with('users',$users);
     }
 
     /**

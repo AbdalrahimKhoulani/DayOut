@@ -2,61 +2,49 @@
 @section('dashboard.content')
     <section>
         <div class=" form-card">
-            <div class="card animated bounceInUp rubberBand">
+            <div class="card animated bounceInRight">
                 <div class="card-body">
                     <div class=" tabulation" style="margin:50px">
                         <div style="padding:50px;">
                             <div class="container">
                                 @include('includes.messages')
-                                <table class="table table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col col-lg-9">#</th>
-                                        <th scope="col col-lg-9">Name</th>
-                                        <th scope="col col-lg-9">Address</th>
-                                        <th scope="col col-lg-9">Organizer</th>
-                                        <th scope="col col-lg-9">Date "D-M-Y"</th>
-                                        <th scope="col col-lg-9">Action</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
+@if(count($suggestions)!=0)
+
+                                <div class="list-group">
                                     @foreach($suggestions as $suggestion)
-                                        <tr>
-                                            <th scope="row">{{$suggestion->id}}</th>
-                                            <td>{{$suggestion->place_name}}</td>
-                                            <td>
-                                                <div class="overflow-auto">{{$suggestion->place_address}} </div>
-                                            </td>
-                                            <td>
-                                                {{$suggestion->organizer->user->first_name.' '.$suggestion->organizer->user->last_name}}
-                                            </td>
-                                            <td>
-                                                {{date('d-m-y',strtotime($suggestion->created_at))}}
-                                            </td>
-                                            <td>
 
 
-                                                    <div style="padding-right: 10px">
-                                                        <form action="{{route('place.proposed.destroy',['id'=>$suggestion->id])}}"
-                                                              method="POST">
-                                                            @csrf
-                                                            @method('delete')
-                                                            <button type="submit" class="btn btn-danger">Delete
-                                                            </button>
-                                                        </form>
-                                                    </div>
 
-                                            </td>
-                                        </tr>
+                                        <div class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h4 class="mb-1">{{$suggestion->place_name}}</h4>
+                                                <form
+                                                    action="{{route('place.proposed.destroy',['id'=>$suggestion->id])}}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-primary">Delete</button>
+                                                </form>
+                                            </div>
+
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">{{$suggestion->place_address}}</h6>
+                                            </div>
+
+                                            <p class="mb-1"> {{$suggestion->description}}</p>
+
+                                            <small> {{$suggestion->organizer->user->first_name.' '.$suggestion->organizer->user->last_name}}</small>
+                                        </div>
                                     @endforeach
-                                    </tbody>
-                                </table>
+                                </div>
+
                                 {{$suggestions->links()}}
+                                @else
+                                    <div class="alert alert-primary" role="alert">
+                                        No proposed places
+                                    </div>
+                                @endif
                             </div>
-
                         </div>
-
-
                     </div>
                 </div>
             </div>

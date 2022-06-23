@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Validator;
 Route::post('/notify', function (Request $request) {
 
     $user = User::where('id', $request['user_id'])->get();
+
     $fcm = new FCM();
     $fcm->sendNotification($user, $request['title'], $request['body']);
 });

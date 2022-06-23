@@ -82,6 +82,7 @@ class ReportController extends Controller
                 'users.first_name',
                 'users.last_name')
             ->whereNull('users.deleted_at')
+            ->whereNull('user_reports.deleted_at')
             ->get();
 
         return $reports;
