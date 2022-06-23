@@ -7,6 +7,8 @@
                     <div class=" tabulation" style="margin:50px">
                         <div class="form-group">
                             <a type="button" class="btn btn-success" href="{{route('place.create')}}">Add place</a>
+
+                            <a type="button" class="btn btn-success" href="{{route('place.proposed.index')}}">View proposed places</a>
                         </div>
                         <div style="padding:50px;">
                             <div class="container">

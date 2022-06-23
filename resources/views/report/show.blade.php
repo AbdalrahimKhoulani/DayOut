@@ -2,17 +2,17 @@
 @section('dashboard.content')
     <section>
         <div class=" form-card">
-            <div class="card animated rubberBand">
+            <div class="card animated bounceInRight">
                 <div class="card-body">
                     <div class="tabulation" style="margin:10px">
                         <div style="padding: 25px;">
                             <div class="card">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col col-lg-3">
+                                        <div class="col col-lg-3" style="text-align: center;">
                                             <img src="{{asset($target->photo)}}" alt="..."
                                                  class="img-thumbnail rounded-circle">
-
+                                            <a href="{{route('user.show',['id'=>$target->id])}}">Open Profile</a>
                                         </div>
                                         <div class="col col-lg-8">
                                             <ul class="list-group list-group-flush">
@@ -41,13 +41,20 @@
                                                 </div>
                                                 <p class="mb-1">{{$report->report}}</p>
                                                 <div class="dropdown-divider"></div>
-                                                <small>Contact with reporter : {{$report->reporter->email .'  --  ' .$report->reporter->phone_number}}</small>
+                                                <small>Contact with reporter
+                                                    : {{$report->reporter->email .'  --  ' .$report->reporter->phone_number}}</small>
                                             </div>
                                             <form method="POST" action="">
                                                 @csrf
                                                 @method('PUT')
-                                                <button type="submit" formaction="{{route('report.accept',['id'=>$report->id])}}" class="btn btn-primary" >Accept</button>
-                                                <button type="submit" formaction="{{route('report.reject',['id'=>$report->id])}}" class="btn btn-warning">Reject</button>
+                                                <button type="submit"
+                                                        formaction="{{route('report.accept',['id'=>$report->id])}}"
+                                                        class="btn btn-primary">Accept
+                                                </button>
+                                                <button type="submit"
+                                                        formaction="{{route('report.reject',['id'=>$report->id])}}"
+                                                        class="btn btn-warning">Reject
+                                                </button>
                                             </form>
                                         </div>
                                     @endforeach
@@ -60,7 +67,7 @@
 
 
             </div>
-
+        </div>
 
     </section>
 @endsection

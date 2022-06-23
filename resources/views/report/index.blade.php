@@ -2,13 +2,13 @@
 @section('dashboard.content')
     <section>
         <div class=" form-card">
-            <div class="card animated bounceInUp rubberBand">
+            <div class="card animated bounceInUp bounceInRight">
                 <div class="card-body">
                     <div class=" tabulation" style="margin:50px">
                         <div style="padding:50px;">
                             <div class="container">
                                 @include('includes.messages')
-
+                                @if(count($reports))
                                     <table class="table table-hover">
                                         <thead>
                                         <tr>
@@ -29,14 +29,19 @@
 
                                                 <td>
                                                     <div class="btn-group" role="group" aria-label="Basic example">
-                                                        <a type="button" class="btn btn-info" href="{{route('report.show',$report->target_id)}}">Details</a>
+                                                        <a type="button" class="btn btn-info"
+                                                           href="{{route('report.show',$report->target_id)}}">Details</a>
                                                     </div>
                                                 </td>
                                             </tr>
                                         @endforeach
                                         </tbody>
                                     </table>
-
+                                @else
+                                    <div class="alert alert-primary" role="alert">
+                                        NO reports
+                                    </div>
+                                @endif
 
                             </div>
 

@@ -33,7 +33,7 @@
                                                 <div class="btn-group" role="group" aria-label="Basic example">
                                                     <div style="padding-right: 10px"><a type="button"
                                                                                         class="btn btn-info"
-                                                                                        href="{{route('customer.show',['id'=>$organizer->id])}}">Details</a>
+                                                                                        href="{{route('user.show',['id'=>$organizer->id])}}">Details</a>
                                                     </div>
 
 

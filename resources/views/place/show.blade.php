@@ -2,7 +2,7 @@
 @section('dashboard.content')
     <section>
         <div class=" form-card">
-            <div class="card animated rubberBand">
+            <div class="card animated bounceInRight">
                 <div class="card-body">
                     <div class="tabulation" style="margin:50px">
 

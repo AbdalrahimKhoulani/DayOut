@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/admin/{id}',function($id){
+Route::get('/admin/{id}', function ($id) {
 
 //    FileContentResult
 
@@ -30,8 +30,8 @@ Route::get('/admin/{id}',function($id){
     $image = imagecreatefromstring($img_data);
 
     $finfo = finfo_open();
-    $extension = finfo_buffer($finfo,$img_data,FILEINFO_MIME_TYPE);
-    header('Content-Type: image/'.str_replace('image/','',$extension));
+    $extension = finfo_buffer($finfo, $img_data, FILEINFO_MIME_TYPE);
+    header('Content-Type: image/' . str_replace('image/', '', $extension));
     return imagejpeg($image);
 
 
@@ -41,73 +41,79 @@ Route::get('/', 'WebUI\LoginController@index')->name('home');
 
 Route::get('/login', 'WebUI\LoginController@index')->name('login');
 Route::post('/user/login', 'WebUI\LoginController@login')->name('login.perform');
-Route::get('/logout','WebUI\LogoutController@logout')->name('logout.perform');
+Route::get('/logout', 'WebUI\LogoutController@logout')->name('logout.perform');
 
 /***
  * place
  */
 Route::prefix('/place')
-    ->middleware(['auth','checkAdmin'])
+    ->middleware(['auth', 'checkAdmin'])
     ->controller('WebUI\PlaceController')
-    ->group(function (){
-    Route::get('/','index')->name('place.index');
+    ->group(function () {
+        Route::get('/', 'index')->name('place.index');
 
-    Route::get('/create','create')->name('place.create');
-    Route::post('/store','store')->name('place.store');
+        Route::get('/create', 'create')->name('place.create');
+        Route::post('/store', 'store')->name('place.store');
 
-    Route::get('/{id}','show')->name('place.show');
+        Route::get('/{id}', 'show')->name('place.show');
 
-    Route::get('/{id}/edit','edit')->name('place.edit');
-    Route::put('/{id}','update')->name('place.update');
+        Route::get('/{id}/edit', 'edit')->name('place.edit');
+        Route::put('/{id}', 'update')->name('place.update');
 
-    Route::delete('/{id}','destroy')->name('place.destroy');
-});
+        Route::delete('/{id}', 'destroy')->name('place.destroy');
+    });
 
 
 Route::prefix('/place/proposed')->controller('WebUI\ProposedPlacesController')
-    ->group(function (){
-        Route::get('/index','index')->name('place.proposed.index');
-        ROute::delete('/{id}','delete')->name('place.proposed.destroy');
+    ->group(function () {
+        Route::get('/index', 'index')->name('place.proposed.index');
+        ROute::delete('/{id}', 'delete')->name('place.proposed.destroy');
     });
 
-Route::prefix('/customer')
-    ->middleware(['auth','checkAdmin'])
-    ->controller('WebUI\CustomerController')
-    ->group(function (){
-    Route::get('/','index')->name('customer.index');
+Route::prefix('/user')
+    ->middleware(['auth', 'checkAdmin'])
+    ->controller('WebUI\UserController')
+    ->group(function () {
 
-    Route::get('/{id}','show')->name('customer.show');
+        Route::get('/', 'index')->name('user.index');
+
+        Route::get('/blocked', 'blockedUsers')->name('user.blocked.index');
+
+        Route::put('/{id}/unblock', 'unblockUser')->name('user.unblock');
+
+        Route::get('/{id}', 'show')->name('user.show');
 
 
-});
+
+    });
 
 Route::prefix('/organizer')
-    ->middleware(['auth','checkAdmin'])
+    ->middleware(['auth', 'checkAdmin'])
     ->controller('WebUI\OrgnizerController')
-    ->group(function (){
-    Route::get('/','index')->name('organizer.index');
+    ->group(function () {
+        Route::get('/', 'index')->name('organizer.index');
 
-    Route::get('/{id}','show')->name('organizer.show');
-});
+        Route::get('/{id}', 'show')->name('organizer.show');
+    });
 
 
 Route::prefix('/promotion')
-    ->middleware(['auth','checkAdmin'])
-    ->controller(PromotionController::class)->group(function(){
-    Route::get('/index','index')->name('promotion.index');
-    Route::get('{id}/show','show')->name('promotion.show');
-    Route::put('/{id}/accept','acceptPromotion')->name('promotion.accept');
-    Route::put('/{id}/reject','rejectPromotion')->name('promotion.reject');
-});
+    ->middleware(['auth', 'checkAdmin'])
+    ->controller(PromotionController::class)->group(function () {
+        Route::get('/index', 'index')->name('promotion.index');
+        Route::get('{id}/show', 'show')->name('promotion.show');
+        Route::put('/{id}/accept', 'acceptPromotion')->name('promotion.accept');
+        Route::put('/{id}/reject', 'rejectPromotion')->name('promotion.reject');
+    });
 
 Route::prefix('/report')
     ->controller(ReportController::class)
-    ->group(function (){
-        Route::get('/index','index')->name('report.index');
-        Route::get('/{id}','show')->name('report.show');
+    ->group(function () {
+        Route::get('/index', 'index')->name('report.index');
+        Route::get('/{id}', 'show')->name('report.show');
 
-        Route::put('/{id}/accept','acceptReport')->name('report.accept');
-        Route::put('/{id}/reject','rejectReport')->name('report.reject');
+        Route::put('/{id}/accept', 'acceptReport')->name('report.accept');
+        Route::put('/{id}/reject', 'rejectReport')->name('report.reject');
     });
 
 

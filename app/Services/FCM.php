@@ -3,19 +3,30 @@
 namespace App\Services;
 
 use App\Models\Notification;
+use App\Models\User;
 
 class FCM
 {
 
     private function getTokens($users)
     {
+
         $tokens = [];
 
-        foreach ($users as $user) {
-            if ($user->mobile_token != null) {
-                array_push($tokens,$user->mobile_token);
+        if ($users instanceof User) {
+            if ($users->mobile_token != null) {
+
+                array_push($tokens, $users->mobile_token);
+            }
+        } else {
+            foreach ($users as $user) {
+                if ($user->mobile_token != null) {
+
+                    array_push($tokens, $user->mobile_token);
+                }
             }
         }
+
         return $tokens;
     }
 
@@ -24,10 +35,11 @@ class FCM
 
         $tokens = $this->getTokens($users);
 
+
         $SERVER_API_KEY = 'AAAARMT3glg:APA91bFoDA_1z1XjPlgnHqS9nneNxE_Xl4u5HaTtotF1Hq4woVVnBwlsQ1EEUQAfiH-hRk85Vn6hHauvmYp1RH8d15EuLKR0jbJDw6nq92GGTDrztkT6NLP3CpLWapyp-AO94v88luws';
 //        $token_1 = 'Test Token';
         $data = [
-            "registration_ids" => ['cU5k0dkITCeXKRFeth0rCi:APA91bEzkpE9-j6KRKmsQloPyTRk5OuJbr70qyUfc-LPe5yindDAHN6gx37pT1oyR4YRyQ6YcZNHgvMcIy0TLTiLI6fGMhgHO_4dI6X4FpScczvTOPr1YSAwh3Tz2Kj-e64_bPU817yi'],
+            "registration_ids" => $tokens,
             "notification" => [
                 "title" => $title,
                 "body" => $body,
@@ -58,20 +70,18 @@ class FCM
     }
 
 
-
     private function storeNotifications($users, $title, $body)
     {
         foreach ($users as $user) {
             Notification::create([
                 'title' => $title,
-                'body'=>$body,
-                'user_id'=>$user->id
+                'body' => $body,
+                'user_id' => $user->id
             ]);
         }
 
 
     }
-
 
 
 }

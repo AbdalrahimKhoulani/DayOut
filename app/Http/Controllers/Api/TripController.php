@@ -630,6 +630,14 @@ class TripController extends BaseController
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
+        $users = User::whereHas('customerTrip',function($query)use($trip){
+            $query->where('trip',$trip->id);
+        })->get();
+
+        $fcm = new FCM();
+        $fcm->sendNotification($users, 'Start trip', 'Your trip '.$trip->title.' started successfully ,we wish you enjoy it');
+
+
         return $this->sendResponse($trip, 'Trip started successfully');
     }
 
@@ -652,7 +660,14 @@ class TripController extends BaseController
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
-        return $this->sendResponse($trip, 'Trip started successfully');
+        $users = User::whereHas('customerTrip',function($query)use($trip){
+            $query->where('trip',$trip->id);
+        })->get();
+
+        $fcm = new FCM();
+        $fcm->sendNotification($users, 'End trip', 'Your trip '.$trip->title.' ended successfully');
+
+        return $this->sendResponse($trip, 'Trip ended successfully');
     }
 
     public function updatePlaceStatus($trip_id, $place_id){
