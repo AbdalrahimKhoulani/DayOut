@@ -63,8 +63,6 @@ class TripController extends BaseController
     {
 
 
-
-
         //        $trips = DB::table('trips')
         //            ->join('')
 
@@ -685,7 +683,7 @@ class TripController extends BaseController
         error_log('Get trip details!');
 
         $trip = Trip::where('id', $id)
-            ->with(['types',  'placeTrips' => function ($query) {
+            ->with(['types', 'placeTrips' => function ($query) {
                 $query->with('place');
             }, 'tripPhotos' => function ($query) {
                 $query->select(['id', 'trip_id']);
@@ -752,12 +750,12 @@ class TripController extends BaseController
 
     public function getTrips()
     {
-
+//TODO get by folloeres
         error_log('Get trips request!');
 
         $id = Auth::id();
 
-      //  dd($id);
+        //  dd($id);
 
         $follows = Organizer::whereHas('followers', function ($query) use ($id) {
             $query->where('user_id', $id);
