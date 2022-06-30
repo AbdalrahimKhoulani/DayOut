@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\BaseController;
 use App\Models\CustomerTrip;
 use App\Models\Passenger;
+use App\Models\Place;
 use App\Models\PlacePhotos;
 use App\Models\Trip;
 use App\Models\Type;
@@ -58,103 +59,281 @@ class TripController extends BaseController
         return $this->sendResponse($types, 'Succeeded!');
     }
 
-    public function getActiveTrips($type)
+    private function filterTrip($trips, $request)
+    {
+
+
+        //        $trips = DB::table('trips')
+        //            ->join('')
+
+
+        //$trips = Trip::with('types');
+
+
+        if ($request->has('title')) {
+            $trips = Trip::where('title', 'like', '%' . $request['title'] . '%');
+        }
+
+
+        if ($request->has('type')) {
+
+            $trips = $trips->whereHas('types', function ($query) use ($request) {
+                $query->where('name', $request['type']);
+            });
+        }
+
+        if ($request->has('place')) {
+            $place = Place::where('name', 'like', '%' . $request['place'] . '%')->first();
+
+            if ($place != null) {
+                $trips = $trips->whereHas('placeTrips', function ($query) use ($place) {
+                    $query->where('place_id', $place->id);
+                });
+            } else {
+                $trips = $trips->whereNull('id');
+            }
+        }
+
+        if ($request->has('min_price')) {
+            $trips = $trips->where('price', '>=', $request['min_price']);
+        }
+
+        if ($request->has('max_price')) {
+            $trips = $trips->where('price', '<=', $request['max_price']);
+        }
+
+        return $trips;
+    }
+
+    public function getActiveTrips4Organizer(Request $request)
     {
         error_log('Get active trips request!');
         $id = Auth::id();
         $organizer = Organizer::where('user_id', $id)->first();
-        if ($type == "organizer") {
-            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
-                ->where('organizer_id', $organizer->id)->where('begin_date', '<=', Carbon::now())
-                ->withCount('customerTrips')
-                ->where('expire_date', '>', Carbon::now())
-                ->with(['types', 'placeTrips' => function ($query) {
-                    $query->with('place');
-                }, 'tripPhotos'])->where('trip_status_id',1)->get();
-        } else {
-            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
-                ->whereHas('customerTrips', function ($query) use ($id) {
-                    $query->where('customer_id', $id);
-                }, '!=', 0)
-                ->withCount('customerTrips')
-                ->where('begin_date', '<=', Carbon::now())
-                ->where('expire_date', '>', Carbon::now())
-                ->with(['types', 'placeTrips' => function ($query) {
-                    $query->with('place');
-                }, 'tripPhotos'])->get();
-        }
 
+        $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+            ->where('organizer_id', $organizer->id)->where('begin_date', '<=', Carbon::now())
+            ->withCount('customerTrips')
+            ->where('expire_date', '>', Carbon::now())
+            ->with(['types', 'placeTrips' => function ($query) {
+                $query->with('place');
+            }, 'tripPhotos'])->where('trip_status_id', 1);
+
+
+        $trips = $this->filterTrip($trips, $request);
 
         error_log('Get active trips request succeeded!');
-        return $this->sendResponse($trips, 'Succeeded!');
+        return $this->sendResponse($trips->paginate(10), 'Succeeded!');
     }
 
-    public function getUpcomingTrips($type)
+    public function getActiveTrips4Customer(Request $request)
+    {
+        error_log('Get active trips request!');
+        $id = Auth::id();
+        $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+            ->whereHas('customerTrips', function ($query) use ($id) {
+                $query->where('customer_id', $id);
+            }, '!=', 0)
+            ->withCount('customerTrips')
+            ->where('begin_date', '<=', Carbon::now())
+            ->where('expire_date', '>', Carbon::now())
+            ->with(['types', 'placeTrips' => function ($query) {
+                $query->with('place');
+            }, 'tripPhotos']);
+
+
+        $trips = $this->filterTrip($trips, $request);
+
+        error_log('Get active trips request succeeded!');
+        return $this->sendResponse($trips->paginate(10), 'Succeeded!');
+    }
+
+
+    public function getUpcomingTrips4Organizer(Request $request)
     {
         error_log('Get upcoming trips request!');
         $id = Auth::id();
 
-        if ($type == "organizer") {
-            $organizer = Organizer::where('user_id', $id)->first();
-            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
-                ->where('organizer_id', $organizer->id)
-                ->where('begin_date', '>', Carbon::now())->
-                withCount('customerTrips')->
-                with(['types', 'placeTrips' => function ($query) {
-                    $query->with('place');
-                }, 'tripPhotos'])->get();
-        } else {
+        $organizer = Organizer::where('user_id', $id)->first();
+        $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+            ->where('organizer_id', $organizer->id)
+            ->where('begin_date', '>', Carbon::now())->withCount('customerTrips')->with(['types', 'placeTrips' => function ($query) {
+                $query->with('place');
+            }, 'tripPhotos']);
 
-            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
-                ->whereHas('customerTrips', function ($query) use ($id) {
-                    $query->where('customer_id', $id);
-                }, '!=', 0)
-                ->withCount('customerTrips')
-                ->with('types')->where('begin_date', '>', Carbon::now())
-                ->with(['placeTrips' => function ($query) {
-                    $query->with('place');
-                }, 'tripPhotos'])->get();
-        }
+
+        $trips = $this->filterTrip($trips, $request);
 
         error_log('Get upcoming trips request succeeded!');
-        return $this->sendResponse($trips, 'Succeeded!');
+        return $this->sendResponse($trips->paginate(10), 'Succeeded!');
     }
 
-    public function getHistoryTrips($type)
+    public function getUpcomingTrips4Customer(Request $request)
+    {
+        error_log('Get upcoming trips request!');
+        $id = Auth::id();
+
+        $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+            ->whereHas('customerTrips', function ($query) use ($id) {
+                $query->where('customer_id', $id);
+            }, '!=', 0)
+            ->withCount('customerTrips')
+            ->with('types')
+            ->where('begin_date', '>', Carbon::now())
+            ->with(['placeTrips' => function ($query) {
+                $query->with('place');
+            }, 'tripPhotos']);
+
+        $trips = $this->filterTrip($trips, $request);
+
+        error_log('Get upcoming trips request succeeded!');
+        return $this->sendResponse($trips->paginate(10), 'Succeeded!');
+    }
+
+
+    public function getHistoryTrips4Organizer(Request $request)
     {
         error_log('Get history trips request!');
         $id = Auth::id();
 
-        if ($type == "organizer") {
-            $organizer = Organizer::where('user_id', $id)->first();
-            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
-                ->withCount('customerTrips')->
-                where('organizer_id', $organizer->id)->
-                where('expire_date', '<', Carbon::now())->
-                with(['types', 'placeTrips' => function ($query) {
-                    $query->with('place');
-                }, 'tripPhotos'])->get();
-        } else {
-            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])->
-            withCount('customerTrips')->
-                with('customerTrips',function ($query) use ($id) {
-                    $query->where('customer_id',$id);
-            })->
-            whereHas('customerTrips', function ($query) use ($id) {
-                $query->where('customer_id', $id);
-            }, '!=', 0)->
-            with('types')->where('expire_date', '<', Carbon::now())
-                ->with(['placeTrips' => function ($query) {
-                    $query->with('place');
-                }, 'tripPhotos'])->get();
+        $organizer = Organizer::where('user_id', $id)->first();
+        $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+            ->withCount('customerTrips')
+            ->where('organizer_id', $organizer->id)
+            ->where('expire_date', '<', Carbon::now())
+            ->with(['types', 'placeTrips' => function ($query) {
+                $query->with('place');
+            }, 'tripPhotos']);
 
 
-        }
-
+        $trips = $this->filterTrip($trips, $request);
 
         error_log('Get history trips request succeeded!');
-        return $this->sendResponse($trips, 'Succeeded!');
+        return $this->sendResponse($trips->paginate(10), 'Succeeded!');
     }
+
+
+    public function getHistoryTrips4Customer(Request $request)
+    {
+        error_log('Get history trips request!');
+        $id = Auth::id();
+
+        $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+            ->withCount('customerTrips')->with('customerTrips', function ($query) use ($id) {
+                $query->where('customer_id', $id);
+            })
+            ->whereHas('customerTrips', function ($query) use ($id) {
+                $query->where('customer_id', $id);
+            }, '!=', 0)
+            ->with('types')->where('expire_date', '<', Carbon::now())
+            ->with(['placeTrips' => function ($query) {
+                $query->with('place');
+            }, 'tripPhotos']);
+
+        $trips = $this->filterTrip($trips, $request);
+
+        error_log('Get history trips request succeeded!');
+        return $this->sendResponse($trips->paginate(10), 'Succeeded!');
+    }
+
+    //    public function getActiveTrips($type)
+    //    {
+    //        error_log('Get active trips request!');
+    //        $id = Auth::id();
+    //        $organizer = Organizer::where('user_id', $id)->first();
+    //        if ($type == "organizer") {
+    //            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+    //                ->where('organizer_id', $organizer->id)->where('begin_date', '<=', Carbon::now())
+    //                ->withCount('customerTrips')
+    //                ->where('expire_date', '>', Carbon::now())
+    //                ->with(['types', 'placeTrips' => function ($query) {
+    //                    $query->with('place');
+    //                }, 'tripPhotos'])->where('trip_status_id',1)->get();
+    //        } else {
+    //            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+    //                ->whereHas('customerTrips', function ($query) use ($id) {
+    //                    $query->where('customer_id', $id);
+    //                }, '!=', 0)
+    //                ->withCount('customerTrips')
+    //                ->where('begin_date', '<=', Carbon::now())
+    //                ->where('expire_date', '>', Carbon::now())
+    //                ->with(['types', 'placeTrips' => function ($query) {
+    //                    $query->with('place');
+    //                }, 'tripPhotos'])->get();
+    //        }
+    //
+    //       // $trips = $this->filterTrip($trips,$request);
+    //
+    //        error_log('Get active trips request succeeded!');
+    //        return $this->sendResponse($trips, 'Succeeded!');
+    //    }
+
+    //    public function getUpcomingTrips($type)
+    //    {
+    //        error_log('Get upcoming trips request!');
+    //        $id = Auth::id();
+    //
+    //        if ($type == "organizer") {
+    //            $organizer = Organizer::where('user_id', $id)->first();
+    //            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+    //                ->where('organizer_id', $organizer->id)
+    //                ->where('begin_date', '>', Carbon::now())->
+    //                withCount('customerTrips')->
+    //                with(['types', 'placeTrips' => function ($query) {
+    //                    $query->with('place');
+    //                }, 'tripPhotos'])->get();
+    //        } else {
+    //
+    //            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+    //                ->whereHas('customerTrips', function ($query) use ($id) {
+    //                    $query->where('customer_id', $id);
+    //                }, '!=', 0)
+    //                ->withCount('customerTrips')
+    //                ->with('types')->where('begin_date', '>', Carbon::now())
+    //                ->with(['placeTrips' => function ($query) {
+    //                    $query->with('place');
+    //                }, 'tripPhotos'])->get();
+    //        }
+    //
+    //        error_log('Get upcoming trips request succeeded!');
+    //        return $this->sendResponse($trips, 'Succeeded!');
+    //    }
+
+    //    public function getHistoryTrips($type)
+    //    {
+    //        error_log('Get history trips request!');
+    //        $id = Auth::id();
+    //
+    //        if ($type == "organizer") {
+    //            $organizer = Organizer::where('user_id', $id)->first();
+    //            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])
+    //                ->withCount('customerTrips')->
+    //                where('organizer_id', $organizer->id)->
+    //                where('expire_date', '<', Carbon::now())->
+    //                with(['types', 'placeTrips' => function ($query) {
+    //                    $query->with('place');
+    //                }, 'tripPhotos'])->get();
+    //        } else {
+    //            $trips = Trip::select(['id', 'title', 'description', 'begin_date', 'expire_date', 'price'])->
+    //            withCount('customerTrips')->
+    //                with('customerTrips',function ($query) use ($id) {
+    //                    $query->where('customer_id',$id);
+    //            })->
+    //            whereHas('customerTrips', function ($query) use ($id) {
+    //                $query->where('customer_id', $id);
+    //            }, '!=', 0)->
+    //            with('types')->where('expire_date', '<', Carbon::now())
+    //                ->with(['placeTrips' => function ($query) {
+    //                    $query->with('place');
+    //                }, 'tripPhotos'])->get();
+    //
+    //
+    //        }
+    //
+    //
+    //        error_log('Get history trips request succeeded!');
+    //        return $this->sendResponse($trips, 'Succeeded!');
+    //    }
 
     public function tripPhotoAsBase64($id)
     {
@@ -191,8 +370,6 @@ class TripController extends BaseController
         $trip_images = [];
         foreach ($photos as $photo) {
             array_push($trip_images, Storage::url($photo['path']));
-
-
         }
         return $this->sendResponse($photos, 'Photos retrieved successfully ');
     }
@@ -284,7 +461,6 @@ class TripController extends BaseController
 
         error_log('Edit trip succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
-
     }
 
 
@@ -510,7 +686,7 @@ class TripController extends BaseController
         error_log('Get trip details!');
 
         $trip = Trip::where('id', $id)
-            ->with(['types',  'placeTrips' => function ($query) {
+            ->with(['types', 'placeTrips' => function ($query) {
                 $query->with('place');
             }, 'tripPhotos' => function ($query) {
                 $query->select(['id', 'trip_id']);
@@ -576,6 +752,7 @@ class TripController extends BaseController
 
     public function getTrips()
     {
+//TODO get by folloeres
         error_log('Get trips request!');
         $trips = Trip::has('placeTrips')->has('tripPhotos')->has('types')
             ->with(['placeTrips', 'types', 'tripPhotos'])
@@ -630,12 +807,12 @@ class TripController extends BaseController
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
-        $users = User::whereHas('customerTrip',function($query)use($trip){
-            $query->where('trip',$trip->id);
+        $users = User::whereHas('customerTrip', function ($query) use ($trip) {
+            $query->where('trip', $trip->id);
         })->get();
 
         $fcm = new FCM();
-        $fcm->sendNotification($users, 'Start trip', 'Your trip '.$trip->title.' started successfully ,we wish you enjoy it');
+        $fcm->sendNotification($users, 'Start trip', 'Your trip ' . $trip->title . ' started successfully ,we wish you enjoy it');
 
 
         return $this->sendResponse($trip, 'Trip started successfully');
@@ -660,38 +837,39 @@ class TripController extends BaseController
         $trip->trip_status_id = $activeStatus->id;
         $trip->save();
 
-        $users = User::whereHas('customerTrip',function($query)use($trip){
-            $query->where('trip',$trip->id);
+        $users = User::whereHas('customerTrip', function ($query) use ($trip) {
+            $query->where('trip', $trip->id);
         })->get();
 
         $fcm = new FCM();
-        $fcm->sendNotification($users, 'End trip', 'Your trip '.$trip->title.' ended successfully');
+        $fcm->sendNotification($users, 'End trip', 'Your trip ' . $trip->title . ' ended successfully');
 
         return $this->sendResponse($trip, 'Trip ended successfully');
     }
 
-    public function updatePlaceStatus($trip_id, $place_id){
+    public function updatePlaceStatus($trip_id, $place_id)
+    {
 
         Log::channel('requestlog')->info('Update place status request!', [
             'trip_id' => $trip_id,
             'place_id' => $place_id
         ]);
 
-        $placeTrip = PlaceTrip::where('trip_id',$trip_id)->where('place_id',$place_id)->first();
-        if($placeTrip == null){
+        $placeTrip = PlaceTrip::where('trip_id', $trip_id)->where('place_id', $place_id)->first();
+        if ($placeTrip == null) {
             Log::channel('requestlog')->error('Trip or place does not exist!');
-            return $this->sendError('Trip or place does not exist!',404);
-        }elseif ($placeTrip->status == false){
+            return $this->sendError('Trip or place does not exist!', 404);
+        } elseif ($placeTrip->status == false) {
             $placeTrip->status = true;
             $placeTrip->save();
-        }else{
+        } else {
             $placeTrip->status = false;
             $placeTrip->save();
         }
 
 
         Log::channel('requestlog')->info('Succeeded!');
-        return $this->sendResponse($placeTrip,'Succeeded!');
+        return $this->sendResponse($placeTrip, 'Succeeded!');
     }
 
     public function deleteTrip($tripId){
