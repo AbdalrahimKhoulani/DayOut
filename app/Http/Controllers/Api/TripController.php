@@ -526,27 +526,35 @@ class TripController extends BaseController
 
         $new_photos = $request['photos'];
         $place_images = [];
-        for ($i = 0; $i < count($new_photos); $i++) {
+//        for ($i = 0; $i < count($new_photos); $i++) {
+//
+//            $img_data = $new_photos[$i]['image'];
+//            $image = base64_decode($img_data);
+//            $filename = uniqid();
+//            //$extension = '.png';
+//            $file = finfo_open();
+//            $result = finfo_buffer($file, $image, FILEINFO_MIME_TYPE);
+//            $extension = str_replace('image/', '.', $result);
+//
+//            Storage::put('public/trips/' . $filename . $extension, $image);
+//
+//
+//            $place_images[$i] = TripPhoto::create([
+//                'trip_id' => $trip->id,
+//                'path' => Storage::url('public/trips/' . $filename . $extension)
+//            ]);
+//        }
+        $photos = $request->file('photos');
 
-            $img_data = $new_photos[$i]['image'];
-            $image = base64_decode($img_data);
-            $filename = uniqid();
-            //$extension = '.png';
-            $file = finfo_open();
-            $result = finfo_buffer($file, $image, FILEINFO_MIME_TYPE);
-            $extension = str_replace('image/', '.', $result);
-
-            Storage::put('public/trips/' . $filename . $extension, $image);
-
-
-            $place_images[$i] = TripPhoto::create([
-                'trip_id' => $trip->id,
-                'path' => Storage::url('public/trips/' . $filename . $extension)
-            ]);
+        foreach ($photos as $photo){
+            $tripPhoto = new TripPhoto();
+            $tripPhoto->path = $this->storeMultiPartImage($photo);
+            $tripPhoto->trip()->associate($trip->id);
+            $tripPhoto->save();
         }
 
         error_log('Edit trip photos succeeded!');
-        return $this->sendResponse($place_images, 'Succeeded!');
+        return $this->sendResponse($trip, 'Succeeded!');
     }
 
 
