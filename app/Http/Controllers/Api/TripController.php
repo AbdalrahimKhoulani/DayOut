@@ -23,6 +23,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Ramsey\Uuid\Type\Integer;
 
 class TripController extends BaseController
@@ -509,6 +510,7 @@ class TripController extends BaseController
 
         $photos = $trip->tripPhotos()->get();
 
+
         foreach ($photos as $photo) {
             $file = Storage::path($photo['path']);
             $file = str_replace('/', '\\', $file);
@@ -545,7 +547,6 @@ class TripController extends BaseController
 //            ]);
 //        }
         $photos = $request->file('photos');
-
         foreach ($photos as $photo){
             $tripPhoto = new TripPhoto();
             $tripPhoto->path = $this->storeMultiPartImage($photo);
@@ -808,7 +809,9 @@ class TripController extends BaseController
     private function storeMultiPartImage($image){
 
         $filename = $image->store('trips',['disk' => 'public']);
-        return Storage::url('public/' . $filename );
+        if(!Str::contains($filename,'.'))
+        return Storage::url('public/' . $filename . '.jpg' );
+        return Storage::url('public/'.$filename);
     }
 
     public function beginTrip($id)
