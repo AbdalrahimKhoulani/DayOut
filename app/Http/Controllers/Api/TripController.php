@@ -567,13 +567,23 @@ class TripController extends BaseController
             error_log('Trip not exist!');
             return $this->sendError('Trip not exist!');
         }
-        $photos = $request['photos'];
-        for ($i = 0; $i < count($photos); $i++) {
-            $tripPhoto = new TripPhoto;
-            $tripPhoto->path = $this->storeImage($photos[$i]['image']);
+        $photos = $request->file('photos');
+
+//        for ($i = 0; $i < count($photos); $i++) {
+//            $tripPhoto = new TripPhoto;
+//            $tripPhoto->path = $this->storeBase64Image($photos[$i]['image']);
+//            $tripPhoto->trip()->associate($trip->id);
+//            $tripPhoto->save();
+//        }
+
+
+        foreach ($photos as $photo){
+            $tripPhoto = new TripPhoto();
+            $tripPhoto->path = $this->storeMultiPartImage($photo);
             $tripPhoto->trip()->associate($trip->id);
             $tripPhoto->save();
         }
+
         $trip->load(['tripPhotos' => function ($query) {
             $query->select(['id', 'trip_id']);
         }]);
@@ -770,7 +780,7 @@ class TripController extends BaseController
         return $this->sendResponse($trips, 'Get trips request succeeded!');
     }
 
-    private function storeImage($photo)
+    private function storeBase64Image($photo)
     {
         $image = base64_decode($photo);
         $filename = uniqid();
@@ -785,6 +795,12 @@ class TripController extends BaseController
             $extention = '.bmp';
         Storage::put('public/trips/' . $filename . $extention, $image);
         return Storage::url('public/trips/' . $filename . $extention);
+    }
+
+    private function storeMultiPartImage($image){
+
+        $filename = $image->store('trips',['disk' => 'public']);
+        return Storage::url('public/' . $filename );
     }
 
     public function beginTrip($id)
