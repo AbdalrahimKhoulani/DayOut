@@ -12,6 +12,7 @@ use App\Models\User;
 
 use App\Models\UserReport;
 use App\Models\UserRole;
+use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Support\Carbon;
@@ -312,19 +313,19 @@ class UserController extends BaseController
     {
         error_log('Customer profile edit request');
         $id = Auth::id();
-        if ($request->has('photo')) {
-            $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
-            $request['photo'] = str_replace('data:image/webp;base64,', '', $request['photo']);
-            $request['photo'] = str_replace('data:image/jpeg;base64,', '', $request['photo']);
-            $request['photo'] = str_replace('data:image/bmp;base64,', '', $request['photo']);
-            $request['photo'] = str_replace(' ', '+', $request['photo']);
-        }
+//        if ($request->has('photo')) {
+//            $request['photo'] = str_replace('data:image/png;base64,', '', $request['photo']);
+//            $request['photo'] = str_replace('data:image/webp;base64,', '', $request['photo']);
+//            $request['photo'] = str_replace('data:image/jpeg;base64,', '', $request['photo']);
+//            $request['photo'] = str_replace('data:image/bmp;base64,', '', $request['photo']);
+//            $request['photo'] = str_replace(' ', '+', $request['photo']);
+//        }
 
 
         $validator = Validator::make($request->all(), [
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
-            'photo' => 'is_img',
+            'photo' => 'image',
             'gender' => ['in:Male,Female'],
         ]);
 
@@ -342,16 +343,19 @@ class UserController extends BaseController
                 $user['last_name'] = $request['last_name'];
             if ($request->has('photo')) {
 
-                $file = Storage::path($user['photo']);
-                $file = str_replace('/', '\\', $file);
+//                $file = Storage::path($user['photo']);
+//                $file = str_replace('/', '\\', $file);
+//
+//                $pieces = explode('\\', $file);
+//
+//                $last_word = array_pop($pieces);
+//                Storage::disk('public')->delete('\users\\' . $last_word);
+//                $user['photo'] = '';
+//                if ($request['photo'] != '')
+//                    $user['photo'] = $this->storeProfileImage($request['photo']);
 
-                $pieces = explode('\\', $file);
 
-                $last_word = array_pop($pieces);
-                Storage::disk('public')->delete('\users\\' . $last_word);
-                $user['photo'] = '';
-                if ($request['photo'] != '')
-                    $user['photo'] = $this->storeProfileImage($request['photo']);
+                $user['photo'] = $this->storeMultiPartImage($request['photo']);
 
             }
             if ($request->has('gender'))
@@ -420,4 +424,14 @@ class UserController extends BaseController
 
         return $this->sendResponse($userReport,'Reported successfully');
     }
+    private function storeMultiPartImage($image){
+
+        // dd($image);
+
+        $filename = $image->store('users',['disk' => 'public']);
+        if(!Str::contains($filename,'.'))
+            return Storage::url('public/' . $filename . '.jpg' );
+        return Storage::url('public/'.$filename);
+    }
+
 }
