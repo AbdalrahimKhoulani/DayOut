@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Type\Integer;
+use Symfony\Component\Console\Input\Input;
 
 class TripController extends BaseController
 {
@@ -495,7 +496,11 @@ class TripController extends BaseController
         error_log('Edit trip photos request');
         $validator = Validator::make($request->all(), [
             'trip_id' => 'required',
-            'photos' => 'required'
+            'photos.*' => 'required|mimes:jpg,jpeg,png,bmp|max:20000'
+        ],[
+            'photos.*.required' => 'Please upload an image',
+            'photos.*.mimes' => 'Only jpeg,png and bmp images are allowed',
+            'photos.*.max' => 'Sorry! Maximum allowed size for an image is 20MB',
         ]);
 
         if ($validator->fails()) {
@@ -557,14 +562,68 @@ class TripController extends BaseController
         error_log('Edit trip photos succeeded!');
         return $this->sendResponse($trip, 'Succeeded!');
     }
+    public function editTripPhotosMultipart(Request $request){
 
+        $this->sendInfoToLog('Edit trip photos with multipart request!',[]);
+
+        $validator = Validator::make($request->all(), [
+            'trip_id' => 'required',
+            'photos.*' => 'required|mimes:jpg,jpeg,png,bmp|max:20000'
+        ],[
+            'photos.*.required' => 'Please upload an image',
+            'photos.*.mimes' => 'Only jpeg,png and bmp images are allowed',
+            'photos.*.max' => 'Sorry! Maximum allowed size for an image is 20MB',
+        ]);
+
+        if ($validator->fails()) {
+            $this->sendErrorToLog($validator->errors(),[]);
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
+        $trip = Trip::find($request['trip_id']);
+        if ($trip == null) {
+            $this->sendErrorToLog('Trip not exist!',[]);
+            return $this->sendError('Trip not exist!');
+        }
+        if($request->has('deleted_photo_ids')){
+            $deletedPhotoIds = $request['deleted_photo_ids'];
+            foreach ($deletedPhotoIds as $deletedPhotoId){
+                $tripPhoto = TripPhoto::find($deletedPhotoId);
+                if($tripPhoto != null){
+                    $file = Storage::path($tripPhoto->path);
+                    $file = str_replace('/', '\\', $file);
+
+                    $pieces = explode('\\', $file);
+
+                    $last_word = array_pop($pieces);
+                    Storage::disk('public')->delete('\trips\\' . $last_word);
+                    $tripPhoto->delete();
+                }
+            }
+        }
+
+        $photos = $request->file('photos');
+        foreach ($photos as $photo){
+            $tripPhoto = new TripPhoto();
+            $tripPhoto->path = $this->storeMultiPartImage($photo);
+            $tripPhoto->trip()->associate($trip->id);
+            $tripPhoto->save();
+        }
+
+        $this->sendInfoToLog('Edit trip photos with multipart request succeeded!',[]);
+        return $this->sendResponse($trip, 'Succeeded!');
+
+    }
 
     public function addTripPhotos(Request $request)
     {
         error_log('Add trip photos request');
         $validator = Validator::make($request->all(), [
             'trip_id' => 'required',
-            'photos' => 'required'
+            'photos.*' => 'required|mimes:jpg,jpeg,png,bmp|max:20000'
+        ],[
+            'photos.*.required' => 'Please upload an image',
+            'photos.*.mimes' => 'Only jpeg,png and bmp images are allowed',
+            'photos.*.max' => 'Sorry! Maximum allowed size for an image is 20MB',
         ]);
 
         if ($validator->fails()) {
@@ -807,6 +866,8 @@ class TripController extends BaseController
     }
 
     private function storeMultiPartImage($image){
+
+       // dd($image);
 
         $filename = $image->store('trips',['disk' => 'public']);
         if(!Str::contains($filename,'.'))
