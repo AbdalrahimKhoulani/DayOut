@@ -12,6 +12,7 @@ use App\Models\User;
 
 use App\Models\UserReport;
 use App\Models\UserRole;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 use Symfony\Component\HttpFoundation\Request;
@@ -243,15 +244,18 @@ class UserController extends BaseController
             'phone_number' => 'required|regex:/(09)[3-9][0-9]{7}/',
             'password' => 'required',
             'description' => 'string',
-            'credential_photo' => 'required',
+            'credential_photo' => 'required|image',
         ]);
 
+        if ($validator->fails()) {
+            $this->sendErrorToLog('Validator failed! check the data',[$validator->errors()]);
+               return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
         $user = User::where('phone_number', $request['phone_number'])->first();
         if ($user == null) {
             return $this->sendError('The account is not exists');
         }
 
-        // dd($user->organizer);
 
         if ($user->organizer != null) {
             return $this->sendError('The account already have organizer role');
@@ -266,7 +270,7 @@ class UserController extends BaseController
             $promotionRequest = new PromotionRequest();
             $promotionRequest->status_id = $promotionStatus->id;
             $promotionRequest->user_id = Auth::id();
-            $promotionRequest->credential_photo = $request['credential_photo'];
+            $promotionRequest->credential_photo = $this->storeMultiPartImage($request['credential_photo']);
             if ($request->has('description'))
                 $promotionRequest->description = $request['description'];
             $promotionRequest->save();
@@ -426,12 +430,21 @@ class UserController extends BaseController
     }
     private function storeMultiPartImage($image){
 
-        // dd($image);
+
 
         $filename = $image->store('users',['disk' => 'public']);
         if(!Str::contains($filename,'.'))
             return Storage::url('public/' . $filename . '.jpg' );
         return Storage::url('public/'.$filename);
     }
+    private function sendInfoToLog($message, $context)
+    {
+        Log::channel('requestlog')->info($message, $context);
+    }
 
+    private function sendErrorToLog($message, $context)
+    {
+        Log::channel('requestlog')->error($message, $context);
+
+    }
 }
