@@ -63,7 +63,7 @@ class OrganizerController extends BaseController
 
     public function editOrganizerProfile(Request $request)
     {
-        error_log('Organizer profile edit request');
+      $this->sendInfoToLog('Organizer profile edit request',[]);
 
 
         $id = Auth::id();
@@ -80,7 +80,7 @@ class OrganizerController extends BaseController
         ]);
 
         if ($validator->fails()) {
-            error_log($validator->errors());
+            $this->sendErrorToLog('Validator failed! check the data',[$validator->errors()]);
             return $this->sendError('Validator failed! check the data', $validator->errors());
         }
 
@@ -91,7 +91,9 @@ class OrganizerController extends BaseController
             if ($request->has('last_name'))
                 $organizer['user']->last_name = $request['last_name'];
             if ($request->has('photo'))
-                $organizer['user']->photo = $this->storeMultiPartImage($request['photo']);
+            {
+                $this->deleteProfileImage();
+                $organizer['user']->photo = $this->storeMultiPartImage($request['photo']);}
             if ($request->has('gender'))
                 $organizer['user']->gender = $request['gender'];
             if ($request->has('bio'))

@@ -566,19 +566,19 @@ class TripController extends BaseController
 
         $this->sendInfoToLog('Edit trip photos with multipart request!',[]);
 
-        $validator = Validator::make($request->all(), [
-            'trip_id' => 'required',
-            'photos.*' => 'required|mimes:jpg,jpeg,png,bmp|max:20000'
-        ],[
-            'photos.*.required' => 'Please upload an image',
-            'photos.*.mimes' => 'Only jpeg,png and bmp images are allowed',
-            'photos.*.max' => 'Sorry! Maximum allowed size for an image is 20MB',
-        ]);
-
-        if ($validator->fails()) {
-            $this->sendErrorToLog($validator->errors(),[]);
-            return $this->sendError('Validator failed! check the data', $validator->errors());
-        }
+//        $validator = Validator::make($request->all(), [
+//            'trip_id' => 'required',
+//            'photos.*' => 'required|mimes:jpg,jpeg,png,bmp|max:20000'
+//        ],[
+//            'photos.*.required' => 'Please upload an image',
+//            'photos.*.mimes' => 'Only jpeg,png and bmp images are allowed',
+//            'photos.*.max' => 'Sorry! Maximum allowed size for an image is 20MB',
+//        ]);
+//
+//        if ($validator->fails()) {
+//            $this->sendErrorToLog($validator->errors(),[]);
+//            return $this->sendError('Validator failed! check the data', $validator->errors());
+//        }
         $trip = Trip::find($request['trip_id']);
         if ($trip == null) {
             $this->sendErrorToLog('Trip not exist!',[]);
@@ -602,11 +602,13 @@ class TripController extends BaseController
         }
 
         $photos = $request->file('photos');
-        foreach ($photos as $photo){
-            $tripPhoto = new TripPhoto();
-            $tripPhoto->path = $this->storeMultiPartImage($photo);
-            $tripPhoto->trip()->associate($trip->id);
-            $tripPhoto->save();
+        if($photos!= null) {
+            foreach ($photos as $photo) {
+                $tripPhoto = new TripPhoto();
+                $tripPhoto->path = $this->storeMultiPartImage($photo);
+                $tripPhoto->trip()->associate($trip->id);
+                $tripPhoto->save();
+            }
         }
 
         $this->sendInfoToLog('Edit trip photos with multipart request succeeded!',[]);
