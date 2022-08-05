@@ -358,7 +358,7 @@ class UserController extends BaseController
 //                if ($request['photo'] != '')
 //                    $user['photo'] = $this->storeProfileImage($request['photo']);
 
-
+                $this->deleteProfileImage();
                 $user['photo'] = $this->storeMultiPartImage($request['photo']);
 
             }
@@ -405,7 +405,24 @@ class UserController extends BaseController
 
         return $this->sendResponse($user->photo, 'Succeeded');
     }
+    public function deleteProfileImage()
+    {
+        $id = Auth::id();
+        $user = User::find($id);
+        $file = Storage::path($user['photo']);
+        $file = str_replace('/', '\\', $file);
 
+        $pieces = explode('\\', $file);
+
+
+        $last_word = array_pop($pieces);
+        Storage::disk('public')->delete('users/' . $last_word);
+
+        $user['photo'] = '';
+        $user->save();
+        error_log('File deleted successful');
+        return $this->sendResponse($user, 'Succeeded');
+    }
     public function reportUser(Request $request)
     {
 

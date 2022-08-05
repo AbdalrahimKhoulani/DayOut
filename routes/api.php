@@ -76,6 +76,7 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
     Route::middleware('auth:api')->group(function () {
 
         Route::put('/profile/customer/edit', 'editProfileCustomer');
+        Route::delete('/profile/delete/photo', 'deleteProfileImage');
         Route::get('/logout', 'logout');
         Route::put('/mobile-token', 'setMobileToken');
         Route::post('/report', 'reportUser');
