@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class OrganizerController extends BaseController
 {
@@ -74,7 +75,8 @@ class OrganizerController extends BaseController
         $validator = Validator::make($request->all(), [
             'first_name' => 'regex:/^[\pL\s\-]+$/u',
             'last_name' => 'regex:/^[\pL\s\-]+$/u',
-            'gender' => ['in:Male,Female']
+            'gender' => ['in:Male,Female'],
+            'photo' => 'image'
         ]);
 
         if ($validator->fails()) {
@@ -89,7 +91,7 @@ class OrganizerController extends BaseController
             if ($request->has('last_name'))
                 $organizer['user']->last_name = $request['last_name'];
             if ($request->has('photo'))
-                $organizer['user']->photo = $this->storeProfileImage($request['photo']);
+                $organizer['user']->photo = $this->storeMultiPartImage($request['photo']);
             if ($request->has('gender'))
                 $organizer['user']->gender = $request['gender'];
             if ($request->has('bio'))
@@ -106,7 +108,7 @@ class OrganizerController extends BaseController
 
     }
 
-    private function storeProfileImage($photo)
+    private function storeProfileImageBase64($photo)
     {
         $image = base64_decode($photo);
         $filename = uniqid();
@@ -121,6 +123,14 @@ class OrganizerController extends BaseController
             $extention = '.bmp';
         Storage::disk('users')->put($filename . $extention, $image);
         return Storage::disk('users')->url('users/' . $filename . $extention);
+    }
+
+    private function storeMultiPartImage($image){
+
+        $filename = $image->store('users',['disk' => 'public']);
+        if(!Str::contains($filename,'.'))
+            return Storage::url('public/' . $filename . '.jpg' );
+        return Storage::url('public/'.$filename);
     }
 
     public function deleteProfileImage()
