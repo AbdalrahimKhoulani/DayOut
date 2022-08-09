@@ -11,6 +11,7 @@ use App\Models\PollChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class PollController extends BaseController
 {
@@ -40,9 +41,18 @@ class PollController extends BaseController
 
     }
 
-    public function create(PollRequest $request){
+    public function create(Request $request){
         Log::channel('requestlog')->info('Create poll request!',[$request->all()]);
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'description' => 'required',
+            'choices' => 'required'
+        ]);
 
+        if ($validator->fails()) {
+            $this->sendErrorToLog('Validator failed! check the data',[$validator->errors()]);
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
         $poll = new Poll();
         if($this->getOrganizerId() == null){
             Log::channel('requestlog')->error('User is not organizer',[$request->all()]);

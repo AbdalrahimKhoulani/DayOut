@@ -14,6 +14,7 @@ use  App\Http\Controllers\Api\BaseController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Passport;
 use function PHPUnit\Framework\isEmpty;
 use App\Models\PlacePhotos;
@@ -107,9 +108,20 @@ class PlaceController extends BaseController
         return $this->sendResponse($place,'Succeeded!');
     }
 
-    public function suggestPlace(PlaceSuggestionRequest $request){
+    public function suggestPlace(Request $request){
 
         $this->sendInfoToLog('Suggest place request',['user_id' => Auth::id()]);
+
+        $validator = Validator::make($request->all(), [
+            'place_name' => 'required',
+            'place_address' => 'required',
+            'description' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            $this->sendErrorToLog('Validator failed! check the data',[$validator->errors()]);
+            return $this->sendError('Validator failed! check the data', $validator->errors());
+        }
         $organizerId = $this->getOrganizerId(Auth::id());
 
         $placeSuggestion = new PlaceSuggestion();
