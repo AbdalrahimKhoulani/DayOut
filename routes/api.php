@@ -199,9 +199,9 @@ Route::middleware('auth:api')->controller(CheckOutController::class)->group(func
 Route::prefix('/polls')->controller(PollController::class)->group(function () {
 
     Route::get('', 'index');
+    Route::post('/create', 'create');
 
     Route::middleware('auth:api')->group(function () {
-        Route::post('/create', 'create');
         Route::get('/organizer', 'organizerPolls');
         Route::put('/vote/{poll_id}/{poll_choice_id}', 'vote');
     });
