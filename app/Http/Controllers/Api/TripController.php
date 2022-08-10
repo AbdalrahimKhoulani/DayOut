@@ -214,7 +214,6 @@ class TripController extends BaseController
         return $this->sendResponse($trips->paginate(10), 'Succeeded!');
     }
 
-
     public function getHistoryTrips4Customer(Request $request)
     {
         error_log('Get history trips request!');
@@ -832,7 +831,7 @@ class TripController extends BaseController
 
     public function getTrips()
     {
-//TODO get by folloeres
+//TODO get by followeres
         error_log('Get trips request!');
         $trips = Trip::has('placeTrips')->has('tripPhotos')->has('types')
             ->with(['placeTrips', 'types', 'tripPhotos'])
@@ -854,17 +853,17 @@ class TripController extends BaseController
     {
         $image = base64_decode($photo);
         $filename = uniqid();
-        $extention = '.png';
+        $extension = '.png';
         $f = finfo_open();
         $result = finfo_buffer($f, $image, FILEINFO_MIME_TYPE);
         if ($result == 'image/jpeg')
-            $extention = '.jpeg';
+            $extension = '.jpeg';
         elseif ($result == 'image/webp')
-            $extention = '.webp';
+            $extension = '.webp';
         elseif ($result == 'image/x-ms-bmp')
-            $extention = '.bmp';
-        Storage::put('public/trips/' . $filename . $extention, $image);
-        return Storage::url('public/trips/' . $filename . $extention);
+            $extension = '.bmp';
+        Storage::put('public/trips/' . $filename . $extension, $image);
+        return Storage::url('public/trips/' . $filename . $extension);
     }
 
     private function storeMultiPartImage($image){

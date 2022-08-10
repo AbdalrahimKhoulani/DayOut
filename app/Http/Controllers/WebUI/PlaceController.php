@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Place;
 use App\Models\PlacePhotos;
 use App\Models\PlaceType;
+use App\Models\Trip;
 use Carbon\Carbon;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -143,7 +144,7 @@ class PlaceController extends Controller
             'type_id' => 'required|int',
             'summary' => 'required',
             'description' => 'required',
-            'photos' => 'required',
+           // 'photos' => 'required',
         ]);
         //dd($request['photos'][0]);
         $place = Place::find($id);
@@ -155,8 +156,9 @@ class PlaceController extends Controller
             $place->description = $request['description'];
             $place->save();
 
-            $this->storeImages($place, $request['photos']);
-
+            if($request->has('photos')) {
+                $this->storeImages($place, $request['photos']);
+            }
             return redirect()->route('place.index')
                 ->with('success','Place info updated successfully');
         }
@@ -164,15 +166,25 @@ class PlaceController extends Controller
             return view('place.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function destroy($id)
-    {
+    {  $trips = Trip::whereHas('placeTrips',function($query) use($id){
+        $query->where('place_id', $id) ;
+    })->get();
+
+        if(count($trips)!=0){
+            return redirect()->route('place.index')
+                ->with('error','Cannot delete this place');
+        }
         $place = Place::find($id)->delete();
-        return redirect()->back();
+        return redirect()->route('place.index')
+            ->with('success','Place deleted successfully');
+    }
+
+
+    public function delete($id)
+    {
+
+        $place = Place::find($id);
+        return \view('place.delete')->with('place',$place);
     }
 }
