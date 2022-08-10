@@ -60,6 +60,7 @@ Route::prefix('/place')
         Route::get('/{id}/edit', 'edit')->name('place.edit');
         Route::put('/{id}', 'update')->name('place.update');
 
+        Route::get('/{id}/delete', 'delete')->name('place.delete');
         Route::delete('/{id}', 'destroy')->name('place.destroy');
     });
 

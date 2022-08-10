@@ -43,13 +43,8 @@
                                                     </div>
 
                                                     <div style="padding-right: 10px">
-                                                        <form action="{{route('place.destroy',['id'=>$place->id])}}"
-                                                              method="POST">
-                                                            @csrf
-                                                            @method('delete')
-                                                            <button type="submit" class="btn btn-danger">Delete
-                                                            </button>
-                                                        </form>
+                                                        <a type="button" class="btn btn-danger"
+                                                           href="{{route('place.delete',['id'=>$place->id])}}">Delete</a>
                                                     </div>
 
 
