@@ -178,7 +178,8 @@ class UserController extends BaseController
             'password' => 'required',
             //'photo' => 'image',
             'gender' => 'required|in:Male,Female',
-            'mobile_token' => 'string'
+            'mobile_token' => 'string',
+            'email' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -223,7 +224,8 @@ class UserController extends BaseController
             'mobile_token' => 'string',
             'credential_photo' => 'required',
             //'credential_photo'=>'required|is_img',
-            'description' => 'string'
+            'description' => 'string',
+            'email' => 'required'
         ]);
 
 
