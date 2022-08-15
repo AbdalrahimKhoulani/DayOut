@@ -4,8 +4,82 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eca38b94dfbec45ea6743af2776a2828",
+    "content-hash": "4da151763ccade4836a072256d8681b7",
     "packages": [
+        {
+            "name": "aloha/twilio",
+            "version": "5.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aloha/laravel-twilio.git",
+                "reference": "f430c272c4e21a53cab6aadade696ba8083e3207"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aloha/laravel-twilio/zipball/f430c272c4e21a53cab6aadade696ba8083e3207",
+                "reference": "f430c272c4e21a53cab6aadade696ba8083e3207",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0",
+                "twilio/sdk": "^6.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.16",
+                "illuminate/console": "~6||~7||~8",
+                "illuminate/support": "~6||~7||~8",
+                "phpunit/phpunit": "^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Aloha\\Twilio\\Support\\Laravel\\ServiceProvider"
+                    ],
+                    "aliases": {
+                        "Twilio": "Aloha\\Twilio\\Support\\Laravel\\Facade"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Aloha\\Twilio\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Travis J Ryan",
+                    "email": "travisjryan@gmail.com"
+                },
+                {
+                    "name": "Hannes Van De Vreken",
+                    "email": "vandevreken.hannes@gmail.com"
+                }
+            ],
+            "description": "Twilio API for Laravel",
+            "homepage": "https://github.com/aloha/laravel-twilio",
+            "keywords": [
+                "ivr",
+                "laravel",
+                "sms",
+                "twilio"
+            ],
+            "support": {
+                "issues": "https://github.com/aloha/laravel-twilio/issues",
+                "source": "https://github.com/aloha/laravel-twilio/tree/5.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/hannesvdvreken",
+                    "type": "github"
+                }
+            ],
+            "time": "2021-02-10T17:00:02+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.9.3",
@@ -3874,6 +3948,49 @@
             "time": "2022-03-27T21:42:02+00:00"
         },
         {
+            "name": "smsgatewayme/client",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/smsgatewayme/client-php.git",
+                "reference": "864f326ad6951599b487aab3cc350a966c5cbd86"
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0",
+                "satooshi/php-coveralls": "~0.6.1",
+                "squizlabs/php_codesniffer": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SMSGatewayMe\\Client\\": "lib/"
+                }
+            },
+            "license": [
+                "Apache v2"
+            ],
+            "authors": [
+                {
+                    "name": "SMS Gateway Me",
+                    "homepage": "https://smsgateway.me"
+                }
+            ],
+            "homepage": "https://smsgateway.me",
+            "keywords": [
+                "api",
+                "php",
+                "sdk",
+                "swagger"
+            ],
+            "time": "2018-05-16T00:07:48+00:00"
+        },
+        {
             "name": "stella-maris/clock",
             "version": "0.1.4",
             "source": {
@@ -6149,6 +6266,55 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/2.2.4"
             },
             "time": "2021-12-08T09:12:39+00:00"
+        },
+        {
+            "name": "twilio/sdk",
+            "version": "6.40.1",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:twilio/twilio-php.git",
+                "reference": "94aa139df0bea5aadddb59353ed0ea220fa65c78"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twilio/twilio-php/zipball/94aa139df0bea5aadddb59353ed0ea220fa65c78",
+                "reference": "94aa139df0bea5aadddb59353ed0ea220fa65c78",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "^6.3 || ^7.0",
+                "phpunit/phpunit": ">=7.0"
+            },
+            "suggest": {
+                "guzzlehttp/guzzle": "An HTTP client to execute the API requests"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Twilio\\": "src/Twilio/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Twilio API Team",
+                    "email": "api@twilio.com"
+                }
+            ],
+            "description": "A PHP wrapper for Twilio's API",
+            "homepage": "https://github.com/twilio/twilio-php",
+            "keywords": [
+                "api",
+                "sms",
+                "twilio"
+            ],
+            "time": "2022-08-10T19:10:40+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -9021,8 +9187,7 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^8.0.2",
-        "ext-fileinfo": "*",
-        "ext-gd": "*"
+        "ext-fileinfo": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.1.0"

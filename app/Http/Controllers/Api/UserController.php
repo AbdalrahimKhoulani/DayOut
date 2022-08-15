@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\ConfirmationCode;
+use App\Models\PasswordConfirmationCode;
 use App\Models\PlacePhotos;
 use App\Models\PromotionRequest;
 use App\Models\PromotionStatus;
@@ -15,6 +16,7 @@ use App\Models\UserRole;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
+use Nette\Utils\DateTime;
 use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -70,6 +72,79 @@ class UserController extends BaseController
             return $this->sendError('Login information are not correct!', ['error' => 'Unauthorized'], 404);
 
         }
+    }
+
+    public function requestResetPassword(Request $request){
+        $this->sendInfoToLog('Request reset password request!',[$request]);
+
+        $validator = Validator::make($request->all(),[
+            'phone_number' => 'required'
+        ]);
+
+        if($validator->fails()){
+            $this->sendErrorToLog('Validator failed',[$validator->errors()]);
+            return $this->sendError('Validator failed', $validator->errors(),405);
+
+        }
+
+        $user = User::where('phone_number',$request['phone_number'])->first();
+
+        if($user == null){
+            $this->sendErrorToLog('User does not exist!',[$request->all()]);
+            return $this->sendError('User does not exist!',[],405);
+        }
+
+        $confirmCode = new PasswordConfirmationCode();
+        $confirmCode['confirm_code'] = Str::random(5);
+        $confirmCode['user_id'] = $user->id;
+        MailController::sendConfirmCode($confirmCode['confirm_code'],$user['email']);
+        $confirmCode->save();
+
+        return $this->sendResponse([],'code sent to email, please check your email');
+    }
+
+
+    public function resetPassword(Request $request){
+        $this->sendInfoToLog('Reset password request!',[$request]);
+
+        $validator = Validator::make($request->all(),[
+            'confirm_code' => 'required',
+            'new_password' => 'required'
+        ]);
+
+        if($validator->fails()){
+            $this->sendErrorToLog('Validator failed',[$validator->errors()]);
+            return $this->sendError('Validator failed', $validator->errors(),405);
+
+        }
+
+        $confirmCode = PasswordConfirmationCode::where('confirm_code',$request['confirm_code'])->first();
+
+        if($confirmCode == null){
+            $this->sendErrorToLog('Code is not valid',[$request['confirm_code']]);
+            return $this->sendError('Code is not valid',[],405);
+        }
+        $to_time = strtotime(now());
+        $from_time = strtotime($confirmCode['created_at']);
+
+        $diff = round(abs($to_time - $from_time) / 60,2);
+
+        if($diff>10){
+            $this->sendErrorToLog('Code expired ',[$request['confirm_code']]);
+            return $this->sendError('Code expired',[],405);
+        }
+
+        $user = User::find($confirmCode['user_id']);
+
+        if($user == null){
+            $this->sendErrorToLog('User not found',[$request['user_id']]);
+            return $this->sendError('User not found',[],405);
+        }
+
+        $user['password'] = Hash::make($request['new_password']);
+        $user->save();
+
+        return $this->sendResponse($user,'User password updated!');
     }
 
     public function setMobileToken(Request $request)

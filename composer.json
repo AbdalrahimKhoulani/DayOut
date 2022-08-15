@@ -4,17 +4,24 @@
     "description": "The Laravel Framework.",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/smsgatewayme/client-php.git"
+        }
+    ],
     "require": {
         "php": "^8.0.2",
         "ext-fileinfo": "*",
-        "ext-gd": "*",
+        "aloha/twilio": "^5.0",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "^2.7",
         "laravel/framework": "^9.2",
         "laravel/passport": "^10.3",
         "laravel/sanctum": "^2.14.1",
         "laravel/tinker": "^2.7",
-        "laravel/ui": "^3.4"
+        "laravel/ui": "^3.4",
+        "smsgatewayme/client": "^0.0.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -56,6 +63,8 @@
             "dont-discover": []
         }
     },
+
+
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
