@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Api\FavoritesController;
 use App\Http\Controllers\Api\FollowController;
+use App\Http\Controllers\Api\MailController;
 use App\Http\Controllers\Api\PlaceController;
 use App\Http\Controllers\Api\PollController;
 use App\Http\Controllers\Api\RoadMapController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\SmsController;
 use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\NotificationsController;
@@ -64,6 +66,10 @@ Route::prefix('/user')->controller(UserController::class)->group(function () {
     Route::post('/register', 'register');
 
     Route::post('/organizer/register', 'organizerRegister');
+
+    Route::post('/password/request','requestResetPassword');
+
+    Route::post('/password/reset','resetPassword');
 
     Route::post('/promotion/request', 'requestPromotion');
 
@@ -217,3 +223,5 @@ Route::prefix('/followers')->middleware('auth:api')->controller(FollowController
     Route::put('/follow/{organizer_user_id}','followOrganizer');
     Route::get('','getFollowedOrganizers');
 });
+
+

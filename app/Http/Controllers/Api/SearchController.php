@@ -90,7 +90,8 @@ class SearchController extends BaseController
     }
 
     public function searchForPlace(Request $request){
-        $places = Place::select(['id','name','address','summary','description','type_id'])
+        $places = Place::select(['id','name','address',
+            'summary','description','type_id'])
             ->with(['type']);
 
 
@@ -99,6 +100,7 @@ class SearchController extends BaseController
             $places = $places->where('name','LIKE','%'.$request['name'].'%');
         }
 
-        return $this->sendResponse($places->paginate(10),'Result retrieved successfully');
+        return $this->sendResponse($places->paginate(10)
+            ,'Result retrieved successfully');
     }
 }
