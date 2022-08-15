@@ -18,7 +18,7 @@ class PollController extends BaseController
 
     public function index(){
         Log::channel('requestlog')->info('Get all polls request');
-        $polls = Poll::paginate(10);
+        $polls = Poll::where('expire_date','>',now())->paginate(10);
         $polls->load('organizer');
         $polls->load('pollChoices.users');
         return $this->sendResponse($polls,'Succeeded!');
@@ -46,6 +46,7 @@ class PollController extends BaseController
         $validator = Validator::make($request->all(), [
             'title' => 'required',
             'description' => 'required',
+            'expire_date' => 'required',
             'choices' => 'required'
         ]);
 
@@ -91,6 +92,28 @@ class PollController extends BaseController
 
     }
 
+    public function delete($pollId){
+        $this->sendInfoToLog('Delete poll request',[$pollId]);
+
+        $organizer = Organizer::where('user_id',Auth::id())->first();
+
+        if($organizer == null){
+            $this->sendErrorToLog('User is not organizer',[Auth::id()]);
+            return $this->sendError('User is not organizer',[],403);
+        }
+
+        $poll = Poll::where('organizer_id',$organizer->id)->where('id',$pollId)->first();
+
+        if($poll == null){
+            $this->sendErrorToLog('Poll does not exist',[$pollId]);
+            return $this->sendError('Poll does not exist',[]);
+        }
+
+        $poll->delete();
+
+        return $this->sendResponse([],'Poll deleted successfully');
+    }
+
     private function getOrganizerId(){
         $organizer = Organizer::where('user_id',Auth::id())->first();
         if($organizer == null)
@@ -125,4 +148,5 @@ class PollController extends BaseController
         }else
             return $poll;
     }
+
 }

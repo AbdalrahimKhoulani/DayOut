@@ -13,7 +13,7 @@ class Poll extends Model
 
     protected $dates = ['deleted_at'];
 
-    protected $fillable = ['title', 'description', 'organizer_id'];
+    protected $fillable = ['title', 'description', 'organizer_id','expire_date'];
 
 
     public function organizer()
