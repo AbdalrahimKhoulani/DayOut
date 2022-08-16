@@ -13,8 +13,7 @@ class SearchController extends BaseController
 {
     public function searchForTrip(Request $request){
 
-        $trips = Trip::has('placeTrips')->has('types')->has('tripPhotos')->
-        select(['id','title','description','begin_date','expire_date','price'])
+        $trips = Trip::has('placeTrips')->has('types')->has('tripPhotos')
             ->where('begin_date','>',Carbon::now())->
             withCount('customerTrips')->
             with(['types','placeTrips'=> function($query){
@@ -90,9 +89,8 @@ class SearchController extends BaseController
     }
 
     public function searchForPlace(Request $request){
-        $places = Place::select(['id','name','address',
-            'summary','description','type_id'])
-            ->with(['type']);
+        $places = Place::
+            with(['type','photos']);
 
 
 
