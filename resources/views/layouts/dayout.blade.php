@@ -61,7 +61,7 @@
                 <div class="desc animate-box">
 
                     <h2 class="animated rubberBand">DayOut</h2>
-                    <h3 class="animated bounceInLeft">Fly to Hong Kong via Los Angeles, USA</h3>
+                    <h3 class="animated bounceInLeft">The way to enjoy</h3>
 
                 </div>
             </div>
