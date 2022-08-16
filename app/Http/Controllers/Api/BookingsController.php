@@ -34,11 +34,13 @@ class BookingsController extends BaseController
             return $this->sendError('This trip is not found');
         }
 
-        $passengers = DB::table('customer_trips')
-            ->join('passengers','customer_trips.id','=','passengers.customer_trip_id')
-            ->where('customer_trips.trip_id',$trip_id)
-            ->select('passengers.*')->get();
-
+//        $passengers = DB::table('customer_trips')
+//            ->join('passengers','customer_trips.id','=','passengers.customer_trip_id')
+//            ->where('customer_trips.trip_id',$trip_id)
+//            ->select('passengers.*')->get();
+          $passengers = Passenger::with(['customerTrip' => function($query) use ($trip_id) {
+              $query->where('trip_id',$trip_id);
+          }])->get();
 
         if (count($passengers) == 0) {
             error_log('This trip has no passengers');

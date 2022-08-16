@@ -205,10 +205,10 @@ Route::middleware('auth:api')->controller(CheckOutController::class)->group(func
 Route::prefix('/polls')->controller(PollController::class)->group(function () {
 
     Route::get('', 'index');
-    Route::post('/create', 'create');
 
     Route::middleware('auth:api')->group(function () {
         Route::get('/organizer', 'organizerPolls');
+        Route::post('/create', 'create');
         Route::put('/vote/{poll_id}/{poll_choice_id}', 'vote');
         Route::delete('/delete/{poll_id}','delete');
     });
