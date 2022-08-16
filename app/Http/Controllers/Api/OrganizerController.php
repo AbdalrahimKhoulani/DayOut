@@ -139,6 +139,9 @@ class OrganizerController extends BaseController
     {
         $id = Auth::id();
         $user = User::find($id);
+        if($user['photo'] == null){
+            return $this->sendResponse($user, 'Succeeded');
+        }
         $file = Storage::path($user['photo']);
         $file = str_replace('/', '\\', $file);
 
