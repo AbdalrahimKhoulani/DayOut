@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Organizer;
 use App\Models\PromotionRequest;
 use App\Models\PromotionStatus;
+use App\Models\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -55,7 +56,10 @@ class PromotionController extends Controller
             'user_id' => $promotion->user_id,
             'credential_photo' => $promotion->credential_photo
         ]);
-
+       $userRole = new UserRole();
+       $userRole->user_id= $promotion->user_id;
+       $userRole->role_id = 3;
+       $userRole->save();
 
 
         if ($organizer == null) {

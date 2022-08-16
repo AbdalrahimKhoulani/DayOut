@@ -257,22 +257,22 @@ class UserController extends BaseController
         $promotionRequest->status_id = $promotionStatus->id;
         $promotionRequest->user_id = $user->id;
 
-        $photo = $request['credential_photo'];
+        //$photo = ;
 
-        $img_data = $photo;
-        $image = base64_decode($img_data);
-        $filename = uniqid();
-        //$extension = '.png';
-        $file = finfo_open();
-        $result = finfo_buffer($file, $image, FILEINFO_MIME_TYPE);
-        $extension = str_replace('image/', '.', $result);
-
-
-        $path = Storage::put(
-            'public/credentials/' . $filename . $extension, $photo);
+//        $img_data = $photo;
+//        $image = base64_decode($img_data);
+//        $filename = uniqid();
+//        //$extension = '.png';
+//        $file = finfo_open();
+//        $result = finfo_buffer($file, $image, FILEINFO_MIME_TYPE);
+//        $extension = str_replace('image/', '.', $result);
 
 
-        $promotionRequest->credential_photo = $path;
+//        $path = Storage::put(
+//            'public/credentials/' . $filename . $extension, $photo);
+
+
+        $promotionRequest->credential_photo = $this->storeMultiPartImage($request['credential_photo']);
         if ($request->has('description'))
             $promotionRequest->description = $request['description'];
         $promotionRequest->save();
