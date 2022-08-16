@@ -61,6 +61,7 @@ class UserController extends BaseController
             $success['token'] = $user->createToken($user->phone_number)->accessToken;
 
             $user = Auth::user();
+            $user->mobile_token = 'mobile_token';
 
             $user->save();
 
