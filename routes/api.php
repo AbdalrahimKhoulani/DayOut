@@ -171,10 +171,10 @@ Route::prefix('/organizer')->controller(OrganizerController::class)->group(funct
 
 
 Route::prefix('/search')->controller(SearchController::class)->group(function () {
-    Route::middleware('auth:api')->group(function () {
-        Route::post('/trip', 'searchForTrip');
-        Route::post('/place','searchForPlace');
-    });
+    Route::post('/place','searchForPlace');
+    Route::post('/trip', 'searchForTrip');
+
+
 });
 
 Route::prefix('/bookings')->controller(BookingsController::class)->group(function () {
