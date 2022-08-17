@@ -15,7 +15,6 @@
                                         <tr>
                                             <th scope="col col-lg-9">#</th>
                                             <th scope="col col-lg-9">Name</th>
-                                            <th scope="col col-lg-9">Address</th>
                                             <th scope="col col-lg-9">Gender</th>
                                             <th scope="col col-lg-9">Phone</th>
                                         </tr>
