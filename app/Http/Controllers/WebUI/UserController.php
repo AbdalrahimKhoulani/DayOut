@@ -23,6 +23,7 @@ class UserController extends Controller
     {
         $users = User::latest()
             ->paginate(10);
+
         return view('user.index')->with('users', $users);
     }
 
